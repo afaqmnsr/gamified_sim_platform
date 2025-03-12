@@ -56,6 +56,52 @@ function runQuickSort(inputArray) {
     };
 }
 
+function runMergeSort(inputArray) {
+    const array = [...inputArray];
+    const startTime = performance.now();
+
+    function mergeSort(arr) {
+        if (arr.length <= 1) return arr;
+
+        const mid = Math.floor(arr.length / 2);
+        const left = mergeSort(arr.slice(0, mid));
+        const right = mergeSort(arr.slice(mid));
+
+        return merge(left, right);
+    }
+
+    function merge(left, right) {
+        const result = [];
+        let i = 0, j = 0;
+
+        while (i < left.length && j < right.length) {
+            if (left[i] < right[j]) {
+                result.push(left[i]);
+                i++;
+            } else {
+                result.push(right[j]);
+                j++;
+            }
+        }
+
+        return result.concat(left.slice(i)).concat(right.slice(j));
+    }
+
+    const sortedArray = mergeSort(array);
+
+    const endTime = performance.now();
+    const executionTime = (endTime - startTime).toFixed(2);
+    const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+    const energyConsumption = (executionTime * 0.0005).toFixed(4);
+
+    return {
+        sortedArray,
+        executionTime: `${executionTime} ms`,
+        memoryUsage: `${memoryUsage} MB`,
+        energyConsumption: `${energyConsumption} J`
+    };
+}
+
 function runBFS(graph, startNode) {
     const startTime = performance.now();
 
@@ -101,6 +147,9 @@ function runBFS(graph, startNode) {
     };
 }
 
-
-
-module.exports = { runBubbleSort, runQuickSort, runBFS };
+module.exports = {
+    runBubbleSort,
+    runQuickSort,
+    runMergeSort,
+    runBFS
+};
