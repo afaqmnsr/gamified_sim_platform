@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 const PORT = 5000;
 const { runBubbleSort, runQuickSort, runMergeSort, runBFS } = require('./algorithms');
+const { runUserCode } = require('./userAlgorithmRunner');
 
 app.use(cors());
 app.use(express.json());
@@ -44,6 +45,20 @@ app.post('/run-algorithm', (req, res) => {
     }
 });
 
+app.post('/run-user-algorithm', async (req, res) => {
+    const { userCode, inputData } = req.body;
 
+    if (!userCode || !inputData) {
+        return res.status(400).json({ error: 'User code and input data are required.' });
+    }
+
+    try {
+        const result = await runUserCode(userCode, inputData);
+        res.json(result);
+    } catch (err) {
+        console.error('User algorithm execution error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

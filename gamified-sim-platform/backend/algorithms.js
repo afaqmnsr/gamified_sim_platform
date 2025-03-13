@@ -21,12 +21,14 @@ function runBubbleSort(inputArray) {
 
     // Mock energy consumption for now (replace with PowerAPI later)
     const energyConsumption = (executionTime * 0.0005).toFixed(4); // arbitrary multiplier
+    const score = calculateScore(executionTime, memoryUsage, energyConsumption);
 
     return {
         sortedArray: array,
         executionTime: `${executionTime} ms`,
         memoryUsage: `${memoryUsage} MB`,
-        energyConsumption: `${energyConsumption} J` // Joules
+        energyConsumption: `${energyConsumption} J`, // Joules
+        score
     };
 }
 
@@ -47,12 +49,14 @@ function runQuickSort(inputArray) {
     const executionTime = (endTime - startTime).toFixed(2);
     const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
     const energyConsumption = (executionTime * 0.0005).toFixed(4);
+    const score = calculateScore(executionTime, memoryUsage, energyConsumption);
 
     return {
         sortedArray,
         executionTime: `${executionTime} ms`,
         memoryUsage: `${memoryUsage} MB`,
-        energyConsumption: `${energyConsumption} J`
+        energyConsumption: `${energyConsumption} J`,
+        score
     };
 }
 
@@ -93,12 +97,14 @@ function runMergeSort(inputArray) {
     const executionTime = (endTime - startTime).toFixed(2);
     const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
     const energyConsumption = (executionTime * 0.0005).toFixed(4);
+    const score = calculateScore(executionTime, memoryUsage, energyConsumption);
 
     return {
         sortedArray,
         executionTime: `${executionTime} ms`,
         memoryUsage: `${memoryUsage} MB`,
-        energyConsumption: `${energyConsumption} J`
+        energyConsumption: `${energyConsumption} J`,
+        score
     };
 }
 
@@ -138,13 +144,22 @@ function runBFS(graph, startNode) {
     const executionTime = (endTime - startTime).toFixed(2);
     const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
     const energyConsumption = (executionTime * 0.0005).toFixed(4);
+    const score = calculateScore(executionTime, memoryUsage, energyConsumption);
 
     return {
         traversalOrder,
         executionTime: `${executionTime} ms`,
         memoryUsage: `${memoryUsage} MB`,
-        energyConsumption: `${energyConsumption} J`
+        energyConsumption: `${energyConsumption} J`,
+        score
     };
+}
+
+function calculateScore(execTime, memUsage, energyCons) {
+    const timeScore = Math.max(0, 100 - parseFloat(execTime));
+    const memScore = Math.max(0, 100 - parseFloat(memUsage));
+    const energyScore = Math.max(0, 100 - (parseFloat(energyCons) * 1000));
+    return ((timeScore + memScore + energyScore) / 3).toFixed(2);
 }
 
 module.exports = {
