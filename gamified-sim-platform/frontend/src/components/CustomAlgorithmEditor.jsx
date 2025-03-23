@@ -1,6 +1,10 @@
 import React from 'react';
 import { Box, Typography, TextField, Grid } from '@mui/material';
 
+// Utility function to check if algorithm expects complex structured input
+const isComplexInputAlgorithm = (algoId) =>
+    ['knapsackDP', 'lcsDP'].includes(algoId);
+
 const CustomAlgorithmEditor = ({
     userCustomCode,
     setUserCustomCode,
@@ -12,6 +16,16 @@ const CustomAlgorithmEditor = ({
     setStartNode,
     selectedAlgorithm
 }) => {
+
+    const handleJsonInputChange = (e) => {
+        try {
+            const parsed = JSON.parse(e.target.value);
+            setInputArray(parsed);
+        } catch (err) {
+            console.warn('Invalid JSON input');
+        }
+    };
+
     return (
         <Box>
             {/* Code Editor Title */}
@@ -44,21 +58,51 @@ const CustomAlgorithmEditor = ({
                 </Typography>
 
                 <Grid container spacing={2}>
-                    {/* Sorting Input Array */}
-                    {['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm) && (
+
+                    {/* Simple Array Input (Sorting Algorithms) */}
+                    {['bubbleSort', 'quickSort', 'mergeSort', 'fibonacciDP'].includes(selectedAlgorithm) && (
                         <Grid item xs={12}>
                             <TextField
-                                label="Input Array (comma-separated)"
-                                fullWidth
-                                value={inputArray.join(',')}
-                                onChange={(e) =>
-                                    setInputArray(
-                                        e.target.value
-                                            .split(',')
-                                            .map((val) => Number(val.trim()))
-                                            .filter((val) => !isNaN(val))
-                                    )
+                                label={
+                                    selectedAlgorithm === 'fibonacciDP'
+                                        ? 'N Value (Single Number)'
+                                        : 'Input Array (comma-separated)'
                                 }
+                                fullWidth
+                                value={
+                                    selectedAlgorithm === 'fibonacciDP'
+                                        ? inputArray[0] ?? ''
+                                        : inputArray.join(',')
+                                }
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (selectedAlgorithm === 'fibonacciDP') {
+                                        const num = Number(value.trim());
+                                        if (!isNaN(num)) setInputArray([num]);
+                                    } else {
+                                        setInputArray(
+                                            value
+                                                .split(',')
+                                                .map((val) => Number(val.trim()))
+                                                .filter((val) => !isNaN(val))
+                                        );
+                                    }
+                                }}
+                            />
+                        </Grid>
+                    )}
+
+                    {/* JSON Input (Structured Data Algorithms) */}
+                    {isComplexInputAlgorithm(selectedAlgorithm) && (
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Structured Input (JSON format)"
+                                multiline
+                                minRows={6}
+                                fullWidth
+                                value={JSON.stringify(inputArray, null, 2)}
+                                onChange={handleJsonInputChange}
+                                helperText="Edit the JSON object for input data."
                             />
                         </Grid>
                     )}

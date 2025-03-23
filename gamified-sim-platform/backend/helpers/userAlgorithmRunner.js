@@ -3,11 +3,12 @@ const vm = require('vm');
 
 async function runUserCode({ userCode, inputData, graph, startNode }) {
     const sandbox = {
-        input: [...(inputData || [])],
+        input: inputData,   // Accept complex structured input now
         graph: graph || {},
         startNode: startNode || '',
         sortedArray: [],
         traversalOrder: [],
+        dpResult: null,     // For DP algorithm results
         console: console
     };
 
@@ -18,10 +19,15 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
 
         const codeToRun = `
       const runAlgo = ${userCode};
-      if (input.length) {
-        sortedArray = runAlgo(input);
-      } else {
+      // Auto detect which arguments to pass
+      if (graph && startNode) {
         traversalOrder = runAlgo(graph, startNode);
+      } else if (Array.isArray(input)) {
+        sortedArray = runAlgo(input);
+      } else if (typeof input === 'object' || typeof input === 'number') {
+        dpResult = runAlgo(input);
+      } else {
+        throw new Error('Unsupported input type for this algorithm');
       }
     `;
 
@@ -36,12 +42,14 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
         return {
             sortedArray: sandbox.sortedArray,
             traversalOrder: sandbox.traversalOrder,
+            dpResult: sandbox.dpResult,
             executionTime: `${executionTime} ms`,
             memoryUsage: `${memoryUsage} MB`,
             energyConsumption: `${energyConsumption} J`,
             score
         };
     } catch (err) {
+        console.error(`❌ VM Execution Error: ${err.message}`);
         throw new Error(`User code failed: ${err.message}`);
     }
 }
