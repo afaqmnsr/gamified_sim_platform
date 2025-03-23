@@ -18,6 +18,9 @@ const AssignmentList = ({ onSelectAssignment }) => {
                 <Paper key={assignment.id} sx={{ p: 2, mb: 2 }}>
                     <Typography variant="h6">{assignment.title}</Typography>
                     <Typography variant="body2">{assignment.description}</Typography>
+                    <Typography variant="caption" color="secondary">
+                        Difficulty: Medium
+                    </Typography>
                     <Button
                         variant="outlined"
                         size="small"

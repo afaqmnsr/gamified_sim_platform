@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'; // Trophy icon for top scorers
 
-const AssignmentLeaderboard = ({ assignmentId }) => {
+const AssignmentLeaderboard = ({ assignmentId, reloadTrigger }) => {
     const [leaderboard, setLeaderboard] = useState([]);
 
     useEffect(() => {
         if (assignmentId) {
-            axios.get(`http://localhost:5000/assignment-leaderboard/${assignmentId}`)
-                .then((res) => setLeaderboard(res.data));
+            axios
+                .get(`http://localhost:5000/assignment-leaderboard/${assignmentId}`)
+                .then((res) => setLeaderboard(res.data))
+                .catch((err) => console.error('Failed to fetch leaderboard:', err));
         }
-    }, [assignmentId]);
+    }, [assignmentId, reloadTrigger]); // ✅ triggers refresh when reloadTrigger changes
 
     if (!assignmentId) return null;
 
@@ -19,16 +22,31 @@ const AssignmentLeaderboard = ({ assignmentId }) => {
             <Typography variant="h6" gutterBottom fontWeight="bold">
                 Leaderboard - {assignmentId}
             </Typography>
-            <List>
-                {leaderboard.map((entry, index) => (
-                    <ListItem key={index}>
-                        <ListItemText
-                            primary={`${index + 1}. ${entry.username}`}
-                            secondary={`Score: ${entry.score}`}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+
+            {leaderboard.length === 0 ? (
+                <Typography>No submissions yet! Be the first to submit.</Typography>
+            ) : (
+                <List>
+                    {leaderboard.map((entry, index) => (
+                        <ListItem key={index} divider>
+                            <ListItemAvatar>
+                                {index === 0 ? (
+                                    <Avatar sx={{ bgcolor: 'gold' }}>
+                                        <EmojiEventsIcon />
+                                    </Avatar>
+                                ) : (
+                                    <Avatar>{entry.username.charAt(0).toUpperCase()}</Avatar>
+                                )}
+                            </ListItemAvatar>
+
+                            <ListItemText
+                                primary={`${index + 1}. ${entry.username}`}
+                                secondary={`Score: ${entry.score} | Time: ${new Date(entry.time).toLocaleString()}`}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
+            )}
         </Box>
     );
 };

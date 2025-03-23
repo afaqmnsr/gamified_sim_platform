@@ -42,6 +42,7 @@ function App() {
 
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [assignmentCode, setAssignmentCode] = useState('');
+  const [reloadLeaderboard, setReloadLeaderboard] = useState(false);
 
   const [tabValue, setTabValue] = useState(0); // 0 = Simulator, 1 = Assignments
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -111,6 +112,9 @@ function App() {
       });
 
       showSnackbar(response.data.message, response.data.isCorrect ? 'success' : 'warning');
+
+      // Trigger Leaderboard Reload
+      setReloadLeaderboard(prev => !prev);
     } catch (error) {
       console.error('Assignment submission error:', error);
       showSnackbar(error.response?.data?.error || 'Unknown error occurred', 'error');
@@ -306,7 +310,7 @@ function App() {
 
                   {/* Assignment Leaderboard */}
                   <Paper elevation={3} sx={{ p: 3 }}>
-                    <AssignmentLeaderboard assignmentId={selectedAssignment.id} />
+                    <AssignmentLeaderboard assignmentId={selectedAssignment.id} reloadTrigger={reloadLeaderboard} />
                   </Paper>
                 </>
               ) : (

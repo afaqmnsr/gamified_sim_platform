@@ -9,6 +9,7 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
         sortedArray: [],
         traversalOrder: [],
         dpResult: null,     // For DP algorithm results
+        customResult: null, // Added for custom assignments
         console: console
     };
 
@@ -17,7 +18,7 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
     try {
         vm.createContext(sandbox);
 
-        const codeToRun = `
+      const codeToRun = `
       const runAlgo = ${userCode};
       // Auto detect which arguments to pass
       if (graph && startNode) {
@@ -25,7 +26,12 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
       } else if (Array.isArray(input)) {
         sortedArray = runAlgo(input);
       } else if (typeof input === 'object' || typeof input === 'number') {
-        dpResult = runAlgo(input);
+        const result = runAlgo(input);
+        if (Array.isArray(result) || typeof result === 'object' || typeof result === 'number' || typeof result === 'boolean') {
+          customResult = result;
+        } else {
+          dpResult = result;
+        }
       } else {
         throw new Error('Unsupported input type for this algorithm');
       }

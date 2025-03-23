@@ -5,25 +5,103 @@ const assignments = [
         title: 'Find Shortest Path',
         description: 'Given a graph, find the shortest path from start to target.',
         input: {
-            graph: { A: ['B'], B: ['C'], C: [] },
+            graph: { A: ['B', 'D'], B: ['C'], C: [], D: ['C'] },
             startNode: 'A',
             targetNode: 'C'
         },
-        expectedOutput: ['A', 'B', 'C'], // Expected traversal order
-        type: 'graph'
+        expectedOutput: ['A', 'D', 'C'], // Expected traversal order (shortest path)
+        type: 'graph',
+        code: `({ graph, startNode, targetNode }) => {
+            // Implement your shortest path algorithm (e.g., BFS or Dijkstra)
+            // Return an array representing the path from startNode to targetNode
+            return [];
+        }`
     },
     {
         id: 'knapsackProblem',
         title: 'Knapsack 0/1 Problem',
         description: 'Maximize the value in the knapsack.',
         input: {
-            weights: [2, 3, 4, 5],
-            values: [3, 4, 5, 6],
-            capacity: 5
+            weights: [1, 3, 4, 5],
+            values: [1, 4, 5, 7],
+            capacity: 7
         },
-        expectedOutput: 7, // Best value
-        type: 'dp'
+        expectedOutput: 9, // Best value (items 3 and 4)
+        type: 'dp',
+        code: `({ weights, values, capacity }) => {
+            // Implement 0/1 Knapsack DP solution
+            // Return the maximum value that fits in the knapsack
+            return 0;
+        }`
+    },
+    {
+        id: 'topKFrequentElements',
+        title: 'Top K Frequent Elements',
+        description: 'Find the top K most frequent elements from the input array.',
+        input: {
+            array: [1, 1, 1, 2, 2, 3],
+            k: 2
+        },
+        expectedOutput: [1, 2], // Order matters
+        type: 'custom',
+        code: `({ array, k }) => {
+            // Implement an algorithm to find top K frequent elements
+            // Return an array of top K frequent elements
+            return [];
+        }`
+    },
+    {
+        id: 'isGraphBipartite',
+        title: 'Is Graph Bipartite?',
+        description: 'Check if the given graph is bipartite.',
+        input: {
+            graph: {
+                0: [1, 3],
+                1: [0, 2],
+                2: [1, 3],
+                3: [0, 2]
+            }
+        },
+        expectedOutput: true,
+        type: 'custom',
+        code: `({ graph }) => {
+            // Implement an algorithm to check if the graph is bipartite
+            // Return true or false
+            return false;
+        }`
+    },
+    {
+        id: 'coinChange',
+        title: 'Minimum Coin Change',
+        description: 'Given coins denominations and an amount, find the minimum number of coins.',
+        input: {
+            coins: [1, 2, 5],
+            amount: 11
+        },
+        expectedOutput: 3, // 5+5+1
+        type: 'dp',
+        code: `({ coins, amount }) => {
+            // Implement a DP solution to find minimum number of coins for given amount
+            // Return the minimum number of coins
+            return -1;
+        }`
+    },
+    {
+        id: 'mergeIntervals',
+        title: 'Merge Overlapping Intervals',
+        description: 'Given a collection of intervals, merge all overlapping intervals.',
+        input: {
+            intervals: [[1, 3], [2, 6], [8, 10], [15, 18]]
+        },
+        expectedOutput: [[1, 6], [8, 10], [15, 18]],
+        type: 'custom',
+        code: `({ intervals }) => {
+            // Implement interval merging logic
+            // Return merged intervals
+            return [];
+        }`
     }
+
 ];
 
 module.exports = { assignments };
