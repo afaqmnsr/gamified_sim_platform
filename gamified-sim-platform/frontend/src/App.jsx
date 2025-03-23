@@ -1,85 +1,130 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { algorithms } from './constants/predefinedAlgorithms';
 import AlgorithmSelector from './components/AlgorithmSelector';
+import CustomAlgorithmEditor from './components/CustomAlgorithmEditor';
 import ResultsDisplay from './components/ResultsDisplay';
 import GraphVisualizer from './components/GraphVisualizer';
-import CustomAlgorithmEditor from './components/CustomAlgorithmEditor';
 import Leaderboard from './components/Leaderboard';
+import { Box, Container, Typography, Button, Grid, Paper } from '@mui/material';
 
 function App() {
-  const [inputArray, setInputArray] = useState([5, 3, 8, 4, 2]);
-  const [graphInput, setGraphInput] = useState(`{
-    "A": ["B", "C"],
-    "B": ["D"],
-    "C": [],
-    "D": []
-  }`);
-  const [startNode, setStartNode] = useState('A');
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubbleSort');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
+  const [userCustomCode, setUserCustomCode] = useState('');
+  const [inputArray, setInputArray] = useState([]);
+  const [graphInput, setGraphInput] = useState('');
+  const [startNode, setStartNode] = useState('');
   const [results, setResults] = useState(null);
   const [scores, setScores] = useState([]);
 
+  const handleAlgorithmSelect = (algoId) => {
+    const algo = algorithms.find((a) => a.id === algoId);
+    if (!algo) return;
+
+    setSelectedAlgorithm(algoId);
+    setUserCustomCode(algo.code);
+
+    if (algo.defaultInput) setInputArray(algo.defaultInput);
+    if (algo.defaultGraph) setGraphInput(JSON.stringify(algo.defaultGraph, null, 2));
+    if (algo.defaultStartNode) setStartNode(algo.defaultStartNode);
+  };
+
   const handleRunAlgorithm = async () => {
     try {
-      const payload =
-        selectedAlgorithm === 'bfs'
-          ? {
-            algorithm: selectedAlgorithm,
-            graph: JSON.parse(graphInput),
-            startNode: startNode
-          }
-          : {
-            algorithm: selectedAlgorithm,
-            inputData: inputArray
-          };
+      if (!selectedAlgorithm) {
+        alert('Please select an algorithm');
+        return;
+      }
 
-      const response = await axios.post('http://localhost:5000/run-algorithm', payload);
+      let payload;
+
+      if (selectedAlgorithm === 'bfs') {
+        payload = {
+          userCode: userCustomCode,
+          graph: JSON.parse(graphInput),
+          startNode: startNode
+        };
+      } else {
+        payload = {
+          userCode: userCustomCode,
+          inputData: inputArray
+        };
+      }
+
+      const response = await axios.post('http://localhost:5000/run-user-algorithm', payload);
+
       setResults(response.data);
-
-      // Add to leaderboard scores
-      setScores(prevScores => [...prevScores, { name: 'Player', score: response.data.score }]);
+      setScores((prevScores) => [...prevScores, { name: 'Player', score: response.data.score }]);
     } catch (error) {
       console.error('Error running algorithm:', error);
     }
   };
 
   return (
-    <div className="flex flex-col items-center p-6 min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">Gamified Algorithm Simulation</h1>
+    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="xl">
+        <Typography variant="h3" align="center" gutterBottom fontWeight="bold">
+          Gamified Algorithm Simulator
+        </Typography>
 
-      <CustomAlgorithmEditor inputArray={inputArray} />
+        <Grid container spacing={4} sx={{ mt: 2 }}>
+          {/* Left Column */}
+          <Grid item xs={12} md={8} lg={9}>
+            <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+              <AlgorithmSelector
+                selectedAlgorithm={selectedAlgorithm}
+                handleAlgorithmSelect={handleAlgorithmSelect}
+              />
+            </Paper>
 
-      <AlgorithmSelector
-        selectedAlgorithm={selectedAlgorithm}
-        setSelectedAlgorithm={setSelectedAlgorithm}
-        inputArray={inputArray}
-        setInputArray={setInputArray}
-        graphInput={graphInput}
-        setGraphInput={setGraphInput}
-        startNode={startNode}
-        setStartNode={setStartNode}
-      />
+            <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+              <CustomAlgorithmEditor
+                userCustomCode={userCustomCode}
+                setUserCustomCode={setUserCustomCode}
+                inputArray={inputArray}
+                setInputArray={setInputArray}
+                graphInput={graphInput}
+                setGraphInput={setGraphInput}
+                startNode={startNode}
+                setStartNode={setStartNode}
+                selectedAlgorithm={selectedAlgorithm}
+              />
 
-      <button
-        onClick={handleRunAlgorithm}
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-      >
-        Run Algorithm
-      </button>
+              <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={handleRunAlgorithm}
+                >
+                  Run Algorithm
+                </Button>
+              </Box>
+            </Paper>
 
-      <ResultsDisplay selectedAlgorithm={selectedAlgorithm} results={results} />
+            <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+              <ResultsDisplay selectedAlgorithm={selectedAlgorithm} results={results} />
+            </Paper>
 
-      {/* Show GraphVisualizer only if BFS is selected */}
-      {selectedAlgorithm === 'bfs' && results && (
-        <GraphVisualizer
-          graph={JSON.parse(graphInput)}
-          traversalOrder={results.traversalOrder}
-        />
-      )}
+            {selectedAlgorithm === 'bfs' && results && (
+              <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                <GraphVisualizer
+                  graph={JSON.parse(graphInput)}
+                  traversalOrder={results.traversalOrder}
+                />
+              </Paper>
+            )}
+          </Grid>
 
-      <Leaderboard scores={scores} />
-
-    </div>
+          {/* Right Column */}
+          <Grid item xs={12} md={4} lg={3}>
+            <Paper elevation={3} sx={{ p: 3 }}>
+              <Leaderboard scores={scores} />
+            </Paper>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 }
 

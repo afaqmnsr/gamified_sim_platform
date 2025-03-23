@@ -1,76 +1,95 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import Badges from './Badges';
+import React from 'react';
+import { Box, Typography, TextField, Grid } from '@mui/material';
 
-const defaultCode = `(arr) => {
-  // Example: Bubble Sort
-  let len = arr.length;
-  for (let i = 0; i < len; i++) {
-      for (let j = 0; j < len - 1; j++) {
-          if (arr[j] > arr[j + 1]) {
-              let temp = arr[j];
-              arr[j] = arr[j + 1];
-              arr[j + 1] = temp;
-          }
-      }
-  }
-  return arr;
-}`;
-
-const CustomAlgorithmEditor = ({ inputArray }) => {
-    const [userCode, setUserCode] = useState(defaultCode);
-    const [results, setResults] = useState(null);
-    const [error, setError] = useState(null);
-
-    const handleRunUserCode = async () => {
-        try {
-            setError(null);
-            const response = await axios.post('http://localhost:5000/run-user-algorithm', {
-                userCode,
-                inputData: inputArray
-            });
-            setResults(response.data);
-        } catch (err) {
-            setError(err.response?.data?.error || 'An error occurred');
-        }
-    };
-
+const CustomAlgorithmEditor = ({
+    userCustomCode,
+    setUserCustomCode,
+    inputArray,
+    setInputArray,
+    graphInput,
+    setGraphInput,
+    startNode,
+    setStartNode,
+    selectedAlgorithm
+}) => {
     return (
-        <div className="w-full max-w-4xl bg-white shadow rounded p-6 mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Custom Algorithm Editor</h2>
-            <textarea
-                rows={15}
-                value={userCode}
-                onChange={(e) => setUserCode(e.target.value)}
-                className="w-full p-4 border rounded font-mono text-sm"
+        <Box>
+            {/* Code Editor Title */}
+            <Typography variant="h5" gutterBottom fontWeight="bold">
+                Algorithm Code Editor
+            </Typography>
+
+            {/* Code Editor */}
+            <TextField
+                label="Edit Algorithm Code"
+                multiline
+                minRows={15}
+                fullWidth
+                value={userCustomCode}
+                onChange={(e) => setUserCustomCode(e.target.value)}
+                margin="normal"
+                variant="outlined"
+                sx={{
+                    fontFamily: 'monospace',
+                    '& .MuiInputBase-root': {
+                        fontSize: '14px'
+                    }
+                }}
             />
-            <button
-                onClick={handleRunUserCode}
-                className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-            >
-                Run Custom Algorithm
-            </button>
 
-            {error && (
-                <div className="mt-4 text-red-600">
-                    <strong>Error:</strong> {error}
-                </div>
-            )}
+            {/* Inputs Section */}
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    Input Configuration
+                </Typography>
 
-            {results && (
-                <div className="mt-6">
-                    <h3 className="text-lg font-semibold">Results</h3>
-                    <p><strong>Sorted Array:</strong> {results.sortedArray.join(", ")}</p>
-                    <p><strong>Execution Time:</strong> {results.executionTime}</p>
-                    <p><strong>Memory Usage:</strong> {results.memoryUsage}</p>
-                    <p><strong>Energy Consumption:</strong> {results.energyConsumption}</p>
-                    <p><strong>Score:</strong> {results.score}</p>
+                <Grid container spacing={2}>
+                    {/* Sorting Input Array */}
+                    {['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm) && (
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Input Array (comma-separated)"
+                                fullWidth
+                                value={inputArray.join(',')}
+                                onChange={(e) =>
+                                    setInputArray(
+                                        e.target.value
+                                            .split(',')
+                                            .map((val) => Number(val.trim()))
+                                            .filter((val) => !isNaN(val))
+                                    )
+                                }
+                            />
+                        </Grid>
+                    )}
 
-                    {/* Badge based on score */}
-                    <Badges score={results.score} />
-                </div>
-            )}
-        </div>
+                    {/* Graph Input for BFS */}
+                    {selectedAlgorithm === 'bfs' && (
+                        <>
+                            <Grid item xs={12} md={8}>
+                                <TextField
+                                    label="Graph (Adjacency List JSON)"
+                                    multiline
+                                    rows={5}
+                                    fullWidth
+                                    value={graphInput}
+                                    onChange={(e) => setGraphInput(e.target.value)}
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    label="Start Node"
+                                    fullWidth
+                                    value={startNode}
+                                    onChange={(e) => setStartNode(e.target.value)}
+                                />
+                            </Grid>
+                        </>
+                    )}
+                </Grid>
+            </Box>
+        </Box>
     );
 };
 

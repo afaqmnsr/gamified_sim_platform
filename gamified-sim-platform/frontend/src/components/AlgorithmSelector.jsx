@@ -1,65 +1,38 @@
 import React from 'react';
+import {
+    Box,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Typography
+} from '@mui/material';
 
-const AlgorithmSelector = ({
-    selectedAlgorithm,
-    setSelectedAlgorithm,
-    inputArray,
-    setInputArray,
-    graphInput,
-    setGraphInput,
-    startNode,
-    setStartNode
-}) => {
+import { algorithms } from '../constants/predefinedAlgorithms';
+
+const AlgorithmSelector = ({ selectedAlgorithm, handleAlgorithmSelect }) => {
     return (
-        <div className="mb-4 w-full max-w-md">
-            <label className="block mb-2 text-sm font-medium text-gray-700">Select Algorithm:</label>
-            <select
-                value={selectedAlgorithm}
-                onChange={(e) => setSelectedAlgorithm(e.target.value)}
-                className="border border-gray-300 rounded px-4 py-2 w-full mb-4"
-            >
-                <option value="bubbleSort">Bubble Sort</option>
-                <option value="quickSort">Quick Sort</option>
-                <option value="mergeSort">Merge Sort</option>
-                <option value="bfs">BFS (Breadth-First Search)</option>
-            </select>
+        <Box>
+            <Typography variant="h5" gutterBottom fontWeight="bold">
+                Select Algorithm
+            </Typography>
 
-            {/* Render inputs based on algorithm type */}
-            {['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm) && (
-                <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Input Array (comma-separated):</label>
-                    <input
-                        type="text"
-                        value={inputArray.join(",")}
-                        onChange={(e) => setInputArray(e.target.value.split(",").map(Number))}
-                        className="border border-gray-300 rounded px-4 py-2 w-full"
-                    />
-                </div>
-            )}
-
-            {selectedAlgorithm === 'bfs' && (
-                <>
-                    <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">Graph (Adjacency List JSON):</label>
-                        <textarea
-                            rows="5"
-                            value={graphInput}
-                            onChange={(e) => setGraphInput(e.target.value)}
-                            className="border border-gray-300 rounded px-4 py-2 w-full"
-                        />
-                    </div>
-                    <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700">Start Node:</label>
-                        <input
-                            type="text"
-                            value={startNode}
-                            onChange={(e) => setStartNode(e.target.value)}
-                            className="border border-gray-300 rounded px-4 py-2 w-full"
-                        />
-                    </div>
-                </>
-            )}
-        </div>
+            <FormControl fullWidth>
+                <InputLabel id="algorithm-label">Algorithm</InputLabel>
+                <Select
+                    labelId="algorithm-label"
+                    value={selectedAlgorithm}
+                    label="Algorithm"
+                    onChange={(e) => handleAlgorithmSelect(e.target.value)}
+                >
+                    {algorithms.map((algo) => (
+                        <MenuItem key={algo.id} value={algo.id}>
+                            {algo.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+        </Box>
     );
 };
 

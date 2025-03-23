@@ -2,12 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import ReactFlow, { MiniMap, Controls, Background } from 'reactflow';
 import 'reactflow/dist/style.css';
 
+import { Box, Typography, Card, CardContent } from '@mui/material';
+
 const GraphVisualizer = ({ graph, traversalOrder }) => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [traversalIndex, setTraversalIndex] = useState(0);
 
-    // Convert graph data to nodes and edges
     const generateGraphElements = useCallback(() => {
         const newNodes = [];
         const newEdges = [];
@@ -23,7 +24,7 @@ const GraphVisualizer = ({ graph, traversalOrder }) => {
                 style: {
                     backgroundColor: '#d1d5db',
                     color: '#333',
-                    border: '1px solid #333',
+                    border: '1px solid #333'
                 }
             });
 
@@ -40,11 +41,10 @@ const GraphVisualizer = ({ graph, traversalOrder }) => {
         setEdges(newEdges);
     }, [graph]);
 
-    // Animate traversal in real-time
     useEffect(() => {
         if (!traversalOrder || traversalOrder.length === 0) return;
 
-        generateGraphElements(); // Reset all nodes before starting
+        generateGraphElements();
 
         let index = 0;
         const interval = setInterval(() => {
@@ -55,7 +55,7 @@ const GraphVisualizer = ({ graph, traversalOrder }) => {
                             ...node,
                             style: {
                                 ...node.style,
-                                backgroundColor: '#4ade80', // green
+                                backgroundColor: '#4ade80',
                                 color: '#fff',
                                 border: '2px solid #22c55e'
                             }
@@ -72,7 +72,7 @@ const GraphVisualizer = ({ graph, traversalOrder }) => {
             } else {
                 setTraversalIndex(index);
             }
-        }, 1000); // Change speed here (1000ms per step)
+        }, 1000);
 
         return () => clearInterval(interval);
     }, [traversalOrder, generateGraphElements]);
@@ -82,28 +82,29 @@ const GraphVisualizer = ({ graph, traversalOrder }) => {
     }, [graph, generateGraphElements]);
 
     return (
-        <div className="w-full h-[500px] bg-white shadow rounded p-4 mt-6">
-            <h3 className="text-lg font-semibold mb-4">Graph Visualization (Animated BFS Traversal)</h3>
+        <Card sx={{ width: '100%', mt: 4 }} elevation={3}>
+            <CardContent>
+                <Typography variant="h6" gutterBottom>
+                    Graph Visualization (Animated BFS Traversal)
+                </Typography>
 
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                fitView
-                attributionPosition="top-right"
-            >
-                <MiniMap />
-                <Controls />
-                <Background color="#aaa" gap={16} />
-            </ReactFlow>
+                <Box sx={{ height: '500px', border: '1px solid #ccc', borderRadius: 1 }}>
+                    <ReactFlow nodes={nodes} edges={edges} fitView attributionPosition="top-right">
+                        <MiniMap />
+                        <Controls />
+                        <Background color="#aaa" gap={16} />
+                    </ReactFlow>
+                </Box>
 
-            {traversalOrder && (
-                <div className="mt-4 text-center text-gray-700">
-                    {traversalIndex < traversalOrder.length
-                        ? `Currently visiting: ${traversalOrder[traversalIndex]}`
-                        : 'Traversal complete!'}
-                </div>
-            )}
-        </div>
+                {traversalOrder && (
+                    <Typography textAlign="center" mt={2} color="text.secondary">
+                        {traversalIndex < traversalOrder.length
+                            ? `Currently visiting: ${traversalOrder[traversalIndex]}`
+                            : 'Traversal complete!'}
+                    </Typography>
+                )}
+            </CardContent>
+        </Card>
     );
 };
 

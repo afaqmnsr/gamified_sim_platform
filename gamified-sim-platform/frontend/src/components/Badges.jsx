@@ -1,4 +1,6 @@
 import React from 'react';
+import { Box, Typography, Chip } from '@mui/material';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 const Badges = ({ score }) => {
     const getBadge = () => {
@@ -9,9 +11,11 @@ const Badges = ({ score }) => {
     };
 
     return (
-        <div className="mt-4 text-lg font-semibold">
-            Badge Earned: {getBadge()}
-        </div>
+        <Box mt={2} display="flex" alignItems="center" gap={1}>
+            <EmojiEventsIcon color="warning" />
+            <Typography variant="body1">Badge Earned:</Typography>
+            <Chip label={getBadge()} color="primary" variant="outlined" />
+        </Box>
     );
 };
 

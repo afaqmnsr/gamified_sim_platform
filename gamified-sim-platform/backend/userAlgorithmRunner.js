@@ -1,24 +1,29 @@
 const { performance } = require('perf_hooks');
 const vm = require('vm');
 
-async function runUserCode(userCode, inputArray) {
+async function runUserCode({ userCode, inputData, graph, startNode }) {
     const sandbox = {
-        input: [...inputArray],
+        input: [...(inputData || [])],
+        graph: graph || {},
+        startNode: startNode || '',
         sortedArray: [],
+        traversalOrder: [],
         console: console
     };
 
     const startTime = performance.now();
 
     try {
-        // Create a VM context for executing user code
         vm.createContext(sandbox);
 
-        // Wrap user code in a function call
         const codeToRun = `
-            const sort = ${userCode};
-            sortedArray = sort(input);
-        `;
+      const runAlgo = ${userCode};
+      if (input.length) {
+        sortedArray = runAlgo(input);
+      } else {
+        traversalOrder = runAlgo(graph, startNode);
+      }
+    `;
 
         vm.runInContext(codeToRun, sandbox, { timeout: 1000 });
 
@@ -30,6 +35,7 @@ async function runUserCode(userCode, inputArray) {
 
         return {
             sortedArray: sandbox.sortedArray,
+            traversalOrder: sandbox.traversalOrder,
             executionTime: `${executionTime} ms`,
             memoryUsage: `${memoryUsage} MB`,
             energyConsumption: `${energyConsumption} J`,
@@ -46,6 +52,5 @@ function calculateScore(execTime, memUsage, energyCons) {
     const energyScore = Math.max(0, 100 - (parseFloat(energyCons) * 1000));
     return ((timeScore + memScore + energyScore) / 3).toFixed(2);
 }
-
 
 module.exports = { runUserCode };
