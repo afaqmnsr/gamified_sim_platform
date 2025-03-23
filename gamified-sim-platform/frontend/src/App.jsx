@@ -9,6 +9,8 @@ import Leaderboard from './components/Leaderboard';
 import AssignmentList from './components/AssignmentList';
 import AssignmentLeaderboard from './components/AssignmentLeaderboard';
 import GraphDrawer from './components/GraphDrawer';
+import CounterexampleDisplay from './components/CounterexampleDisplay';
+import ProofGraphVisualizer from './components/ProofVisualizer'; // ✅ You already have this!
 
 import {
   Box,
@@ -50,6 +52,8 @@ function App() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'error' | 'success' | 'info'
   const [graphDrawerOpen, setGraphDrawerOpen] = useState(false);
+  const [counterexample, setCounterexample] = useState(null);
+  const [proofData, setProofData] = useState(null);
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
@@ -66,6 +70,14 @@ function App() {
     if (algo.defaultStartNode) setStartNode(algo.defaultStartNode);
   };
 
+  const validateJSON = (str) => {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      return null;
+    }
+  };
+
   const handleRunAlgorithm = async () => {
     if (!selectedAlgorithm) {
       return showSnackbar('Please select an algorithm', 'warning');
@@ -74,18 +86,46 @@ function App() {
       return showSnackbar('No algorithm code found!', 'warning');
     }
 
+    const algo = algorithms.find(a => a.id === selectedAlgorithm);
+
+    // ✅ Safely parse graphInput only if it exists and is valid JSON
+    let parsedGraph = null;
+
+    if (graphInput && graphInput.trim() !== '') {
+      parsedGraph = validateJSON(graphInput);
+      if (!parsedGraph) {
+        showSnackbar('Invalid graph input JSON!', 'error');
+        return;
+      }
+    }
+
     let payload = {
       userCode: userCustomCode,
       inputData: inputArray || [],
-      graph: (selectedAlgorithm === 'bfs' && graphInput) ? JSON.parse(graphInput) : null,
+      graph: (selectedAlgorithm === 'bfs' && parsedGraph) ? parsedGraph : null,
       startNode: (selectedAlgorithm === 'bfs' && startNode) ? startNode : null
     };
 
     try {
       setIsRunning(true);
-      const response = await axios.post('http://localhost:5000/run-user-algorithm', payload);
+      setCounterexample(null); // Reset on every run
 
+      // Run user Code
+      const response = await axios.post('http://localhost:5000/run-user-algorithm', payload);
       setResults(response.data);
+      showSnackbar('Algorithm ran successfully!', 'success');
+
+      // SMT Validation (if algo.smtType defined)
+      if (algo?.smtType) {
+        await runSMTValidation(algo.smtType, algo.smtConstraints || {}, parsedGraph);
+      }
+
+      // Symbolic Execution (if algo.enableSymbolicExecution true)
+      if (algo?.enableSymbolicExecution) {
+        await runSymbolicExecution(userCustomCode);
+      }
+
+      // Update scores after validations
       setScores((prevScores) => [...prevScores, { name: 'Player', score: response.data.score }]);
       showSnackbar('Algorithm ran successfully!', 'success');
     } catch (error) {
@@ -123,6 +163,82 @@ function App() {
       setIsRunning(false);
     }
 
+  };
+
+  const runSMTValidation = async (smtType, constraints, parsedGraph) => {
+    try {
+      let finalConstraints = constraints;
+
+      if (smtType === "isGraphBipartite") {
+        if (!parsedGraph) {
+          showSnackbar('No valid graph provided for bipartiteness check!', 'error');
+          return;
+        }
+
+        const nodes = Object.keys(parsedGraph);
+        const edges = [];
+
+        nodes.forEach(source => {
+          parsedGraph[source].forEach(target => {
+            edges.push({ source, target });
+          });
+        });
+
+        finalConstraints = { nodes, edges };
+      }
+
+      const smtRes = await axios.post('http://localhost:5000/analyze-smt', {
+        algorithmType: smtType,
+        params: finalConstraints
+      });
+
+      console.log("SMT Validation Response:", smtRes.data);
+
+      const { valid, proof, counterexample, message } = smtRes.data;
+
+      console.log('SMT Validation Result:', valid, proof, counterexample, message);
+
+      setCounterexample(null);
+      setProofData(null);
+
+      if (!valid) {
+        if (counterexample) {
+          setCounterexample(counterexample);
+          showSnackbar('SMT Counterexample found!', 'warning');
+        } else {
+          showSnackbar('SMT Validation failed, no counterexample.', 'error');
+        }
+      } else {
+        if (proof) {
+          setProofData(proof);
+          showSnackbar(message || 'SMT validation passed with proof!', 'success');
+        } else {
+          showSnackbar(message || 'SMT validation passed!', 'success');
+        }
+      }
+
+    } catch (error) {
+      console.error('SMT Validation error:', error);
+      showSnackbar('SMT validation failed', 'error');
+      setProofData(null);
+    }
+  };
+
+  const runSymbolicExecution = async (code) => {
+    try {
+      const response = await axios.post('http://localhost:5000/analyze-symbolic-execution', { code });
+
+      if (!response.data.valid) {
+        setCounterexample(response.data.counterexample);
+        showSnackbar('Symbolic execution counterexample found!', 'warning');
+      } else {
+        showSnackbar(response.data.message || 'Symbolic execution passed!', 'success');
+        setCounterexample(null);
+      }
+    } catch (error) {
+      console.error('Symbolic Execution error:', error);
+      showSnackbar('Symbolic execution failed', 'error');
+    }
   };
 
   // Create Alert component
@@ -200,6 +316,7 @@ function App() {
         {tabValue === 0 && (
           <Grid container spacing={4}>
             <Grid item xs={12} md={8} lg={9}>
+
               {/* Algorithm Selector */}
               <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
                 <AlgorithmSelector
@@ -257,7 +374,7 @@ function App() {
               {selectedAlgorithm === 'bfs' && results && (
                 <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
                   <GraphVisualizer
-                    graph={JSON.parse(graphInput)}
+                    graph={validateJSON(graphInput)}
                     traversalOrder={results.traversalOrder}
                   />
                 </Paper>
@@ -269,7 +386,18 @@ function App() {
               <Paper elevation={3} sx={{ p: 3 }}>
                 <Leaderboard scores={scores} />
               </Paper>
+
+              {/* Counterexample + Proof visualization */}
+              {counterexample && (
+                <CounterexampleDisplay counterexample={counterexample} />
+              )}
+
+              {(proofData || counterexample) && (
+                <ProofGraphVisualizer proof={proofData || { explanation: "Counterexample found", ...counterexample }} />
+              )}
+
             </Grid>
+
           </Grid>
         )}
 

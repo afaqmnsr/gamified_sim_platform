@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');  // ✅
 const app = express();
 const _ = require('lodash');
 const PORT = 5000;
@@ -12,6 +13,7 @@ let assignmentSubmissions = []; // In-memory storage for scores
 app.use(cors());
 app.use(express.json());
 
+// Run Algorithm
 app.post('/run-user-algorithm', async (req, res) => {
     const { userCode, inputData, graph, startNode } = req.body;
 
@@ -103,6 +105,60 @@ app.get('/assignment-leaderboard/:assignmentId', (req, res) => {
         .filter(s => s.assignmentId === assignmentId && s.isCorrect)
         .sort((a, b) => b.score - a.score);
     res.json(leaderboard);
+});
+
+// Analyze algorithm via SMT Solver
+app.post('/analyze-smt', async (req, res) => {
+    const { algorithmType, params } = req.body;
+
+    try {
+        const response = await axios.post('http://localhost:6000/analyze', {
+            algorithmType,
+            constraints: params // ✅ FIX: send params AS constraints
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('SMT Analysis Error:', error.message);
+        res.status(500).json({ error: 'Failed to analyze algorithm' });
+    }
+});
+
+app.post('/analyze-smt-assignment', async (req, res) => {
+    const { assignmentId } = req.body;
+    const assignment = assignments.find(a => a.id === assignmentId);
+
+    if (!assignment || !assignment.smtSpec) {
+        return res.status(404).json({ error: 'No SMT spec for this assignment' });
+    }
+
+    try {
+        const response = await axios.post('http://localhost:6000/analyze', {
+            algorithmType: assignment.smtSpec.type,
+            constraints: assignment.smtSpec.constraints
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('SMT Assignment Analysis Error:', error.message);
+        res.status(500).json({ error: 'SMT analysis failed' });
+    }
+});
+
+app.post('/analyze-symbolic-execution', async (req, res) => {
+    const { code } = req.body;
+
+    try {
+        const response = await axios.post('http://localhost:6000/analyze', {
+            algorithmType: 'symbolicExecution',
+            code
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('Symbolic Execution Error:', error.message);
+        res.status(500).json({ error: 'Symbolic execution failed' });
+    }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -151,5 +151,37 @@ export const algorithms = [
       text1: "AGGTAB",
       text2: "GXTXAYB"
     }
+  },
+
+  {
+    id: 'knapsackProblem',
+    name: 'Knapsack Problem',
+    code: `({ weights, values, capacity }) => {
+    // Your Knapsack code here
+  }`,
+    defaultInput: { weights: [1, 3, 4, 5], values: [1, 4, 5, 7], capacity: 7 },
+    smtType: 'knapsackOptimal',
+    smtConstraints: {
+      capacityNonNegative: true,
+      weightsPositive: true,
+      valuesPositive: true
+    }
+  },
+  {
+    id: 'isGraphBipartiteSMT',
+    name: 'Graph Bipartite SMT Check',
+    code: `({ graph }) => {
+      // SMT will verify if the graph is bipartite
+      return true; // We return true, SMT will override the validation
+    }`,
+    defaultInput: {
+      graph: {
+        0: [1, 3],
+        1: [0, 2],
+        2: [1, 3],
+        3: [0, 2]
+      }
+    },
+    smtType: 'isGraphBipartite'
   }
 ];

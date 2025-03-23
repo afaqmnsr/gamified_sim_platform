@@ -33,7 +33,15 @@ const assignments = [
             // Implement 0/1 Knapsack DP solution
             // Return the maximum value that fits in the knapsack
             return 0;
-        }`
+        }`,
+        smtSpec: {
+            type: 'knapsackOptimal',
+            constraints: {
+                capacityNonNegative: true,
+                weightsPositive: true,
+                valuesPositive: true
+            }
+        }
     },
     {
         id: 'topKFrequentElements',
