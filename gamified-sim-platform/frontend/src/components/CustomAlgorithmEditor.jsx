@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, TextField, Grid } from '@mui/material';
+import { Box, Button, Typography, TextField, Grid } from '@mui/material';
 
 // Utility function to check if algorithm expects complex structured input
 const isComplexInputAlgorithm = (algoId) =>
@@ -14,7 +14,10 @@ const CustomAlgorithmEditor = ({
     setGraphInput,
     startNode,
     setStartNode,
-    selectedAlgorithm
+    selectedAlgorithm,
+    setGraphDrawerOpen,
+    isRunning,
+    handleRunAlgorithm
 }) => {
 
     const handleJsonInputChange = (e) => {
@@ -128,6 +131,17 @@ const CustomAlgorithmEditor = ({
                                     value={startNode}
                                     onChange={(e) => setStartNode(e.target.value)}
                                 />
+                            </Grid>
+
+                            {/* Add Draw Graph button */}
+                            <Grid item xs={12}>
+                                <Button
+                                    variant="outlined"
+                                    color="secondary"
+                                    onClick={() => setGraphDrawerOpen(true)}
+                                >
+                                    Draw Custom Graph
+                                </Button>
                             </Grid>
                         </>
                     )}

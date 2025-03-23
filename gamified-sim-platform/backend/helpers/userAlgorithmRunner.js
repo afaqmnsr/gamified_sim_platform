@@ -21,6 +21,11 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
       const codeToRun = `
       const runAlgo = ${userCode};
 
+      // Debug logs inside the VM (Optional)
+      console.log("Inside VM -> input:", input);
+      console.log("Inside VM -> graph:", graph);
+      console.log("Inside VM -> startNode:", startNode);
+
       // Case 1: If graph + startNode + targetNode exist, pass them as an object (common in JS)
       if (
         input &&

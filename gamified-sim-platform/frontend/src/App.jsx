@@ -8,12 +8,13 @@ import GraphVisualizer from './components/GraphVisualizer';
 import Leaderboard from './components/Leaderboard';
 import AssignmentList from './components/AssignmentList';
 import AssignmentLeaderboard from './components/AssignmentLeaderboard';
+import GraphDrawer from './components/GraphDrawer';
 
 import {
   Box,
+  Button,
   Container,
   Typography,
-  Button,
   Grid,
   Paper,
   IconButton,
@@ -48,7 +49,7 @@ function App() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'error' | 'success' | 'info'
-
+  const [graphDrawerOpen, setGraphDrawerOpen] = useState(false);
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
@@ -75,9 +76,9 @@ function App() {
 
     let payload = {
       userCode: userCustomCode,
-      inputData: inputArray,
-      graph: selectedAlgorithm === 'bfs' ? JSON.parse(graphInput) : null,
-      startNode: selectedAlgorithm === 'bfs' ? startNode : null
+      inputData: inputArray || [],
+      graph: (selectedAlgorithm === 'bfs' && graphInput) ? JSON.parse(graphInput) : null,
+      startNode: (selectedAlgorithm === 'bfs' && startNode) ? startNode : null
     };
 
     try {
@@ -140,6 +141,11 @@ function App() {
     setSnackbarOpen(false);
   };
 
+  const handleGraphSave = (adjacencyList) => {
+    setGraphInput(JSON.stringify(adjacencyList, null, 2));
+    showSnackbar('Graph saved successfully!', 'success');
+  };
+
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary', position: 'relative' }}>
       {/* Dark Mode Toggle */}
@@ -155,6 +161,13 @@ function App() {
       {isRunning && (
         <LinearProgress sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 9999 }} color="secondary" />
       )}
+
+      {/* GraphDrawer */}
+      <GraphDrawer
+        open={graphDrawerOpen}
+        handleClose={() => setGraphDrawerOpen(false)}
+        onGraphSave={handleGraphSave}
+      />
 
       <Container maxWidth="xl" sx={{ py: 6 }}>
         <Typography variant="h3" align="center" gutterBottom fontWeight="bold">
@@ -207,6 +220,9 @@ function App() {
                   startNode={startNode}
                   setStartNode={setStartNode}
                   selectedAlgorithm={selectedAlgorithm}
+                  setGraphDrawerOpen={setGraphDrawerOpen}
+                  isRunning={isRunning}
+                  handleRunAlgorithm={handleRunAlgorithm}
                 />
 
                 <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
