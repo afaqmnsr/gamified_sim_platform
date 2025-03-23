@@ -19,7 +19,7 @@ const AssignmentList = ({ onSelectAssignment }) => {
                     <Typography variant="h6">{assignment.title}</Typography>
                     <Typography variant="body2">{assignment.description}</Typography>
                     <Typography variant="caption" color="secondary">
-                        Difficulty: Medium
+                        Difficulty: {assignment.difficulty || 'Medium'}
                     </Typography>
                     <Button
                         variant="outlined"

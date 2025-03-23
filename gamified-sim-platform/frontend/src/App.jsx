@@ -283,18 +283,74 @@ function App() {
                     <Typography variant="body2" sx={{ mb: 2 }}>
                       {selectedAssignment.description}
                     </Typography>
+                    <Typography variant="caption" color="secondary">
+                      Difficulty: {selectedAssignment.difficulty}
+                    </Typography>
 
                     <CustomAlgorithmEditor
                       userCustomCode={assignmentCode}
                       setUserCustomCode={setAssignmentCode}
-                      selectedAlgorithm={selectedAssignment.id}
-                      inputArray={[]}
+                      selectedAlgorithm={selectedAssignment ? selectedAssignment.id : ''}
+                      inputArray={[]} // Optional input editing, depending on assignment policy
                       setInputArray={() => { }}
                       graphInput=""
                       setGraphInput={() => { }}
                       startNode=""
                       setStartNode={() => { }}
                     />
+
+                    {/* Assignment Input Preview */}
+                    <Box sx={{ mt: 4 }}>
+                      <Typography variant="h6" gutterBottom fontWeight="bold">
+                        Input Configuration
+                      </Typography>
+
+                      <Paper elevation={2} sx={{ p: 2 }}>
+                        {selectedAssignment?.type === 'graph' && (
+                          <>
+                            <Typography variant="body2" gutterBottom>
+                              <strong>Graph:</strong>
+                            </Typography>
+                            <pre style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                              {JSON.stringify(selectedAssignment.input.graph, null, 2)}
+                            </pre>
+
+                            <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
+                              <strong>Start Node:</strong> {selectedAssignment.input.startNode}
+                            </Typography>
+
+                            {selectedAssignment.input.targetNode && (
+                              <Typography variant="body2">
+                                <strong>Target Node:</strong> {selectedAssignment.input.targetNode}
+                              </Typography>
+                            )}
+                          </>
+                        )}
+
+                        {selectedAssignment?.type === 'dp' && (
+                          <>
+                            <Typography variant="body2" gutterBottom>
+                              <strong>Input:</strong>
+                            </Typography>
+                            <pre style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                              {JSON.stringify(selectedAssignment.input, null, 2)}
+                            </pre>
+                          </>
+                        )}
+
+                        {selectedAssignment?.type === 'custom' && (
+                          <>
+                            <Typography variant="body2" gutterBottom>
+                              <strong>Input:</strong>
+                            </Typography>
+                            <pre style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                              {JSON.stringify(selectedAssignment.input, null, 2)}
+                            </pre>
+                          </>
+                        )}
+                      </Paper>
+                    </Box>
+                  
 
                     <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
                       <Button
@@ -310,7 +366,10 @@ function App() {
 
                   {/* Assignment Leaderboard */}
                   <Paper elevation={3} sx={{ p: 3 }}>
-                    <AssignmentLeaderboard assignmentId={selectedAssignment.id} reloadTrigger={reloadLeaderboard} />
+                    <AssignmentLeaderboard
+                      assignmentId={selectedAssignment.id}
+                      reloadTrigger={reloadLeaderboard}
+                    />
                   </Paper>
                 </>
               ) : (

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const _ = require('lodash');
 const PORT = 5000;
 
 const { runUserCode } = require('./helpers/userAlgorithmRunner');
@@ -50,26 +51,26 @@ app.post('/submit-assignment', async (req, res) => {
 
         const result = await runUserCode({
             userCode,
-            inputData: assignment.input,
-            graph: assignment.type === 'graph' ? assignment.input.graph : null,
-            startNode: assignment.type === 'graph' ? assignment.input.startNode : null
+            inputData: assignment.input
         });
 
         // Auto-evaluation logic
         let isCorrect = false;
+        const expected = assignment.expectedOutput;
 
-        try {
-            // Validate result matches expected
-            if (assignment.type === 'graph') {
-                isCorrect = JSON.stringify(result.traversalOrder) === JSON.stringify(assignment.expectedOutput);
-            } else if (assignment.type === 'dp') {
-                isCorrect = result.dpResult === assignment.expectedOutput;
-            } else {
-                throw new Error('Unknown assignment type');
-            }
-        } catch (e) {
-            console.warn('Comparison failed:', e.message);
-        }
+        // Decide which result field to check
+        const expectedField = assignment.expectedResultType ||
+            (assignment.type === 'dp' ? 'dpResult' :
+                assignment.id === 'shortestPath' ? 'customResult' : 'traversalOrder');
+
+        const actualResult = result[expectedField];
+
+        // Debug logs
+        console.log('Checking field:', expectedField);
+        console.log('Expected:', expected);
+        console.log('Actual:', actualResult);
+
+        isCorrect = _.isEqual(actualResult, expected);
 
         const submission = {
             assignmentId,

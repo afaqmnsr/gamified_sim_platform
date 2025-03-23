@@ -5,17 +5,17 @@ const assignments = [
         title: 'Find Shortest Path',
         description: 'Given a graph, find the shortest path from start to target.',
         input: {
-            graph: { A: ['B', 'D'], B: ['C'], C: [], D: ['C'] },
+            graph: {
+                A: ['B'],
+                B: ['C'],
+                C: []
+            },
             startNode: 'A',
             targetNode: 'C'
         },
-        expectedOutput: ['A', 'D', 'C'], // Expected traversal order (shortest path)
-        type: 'graph',
-        code: `({ graph, startNode, targetNode }) => {
-            // Implement your shortest path algorithm (e.g., BFS or Dijkstra)
-            // Return an array representing the path from startNode to targetNode
-            return [];
-        }`
+        expectedOutput: ['A', 'B', 'C'], // ✅ Correct answer based on the graph!
+        expectedResultType: 'customResult',
+        type: 'graph'
     },
     {
         id: 'knapsackProblem',
@@ -28,6 +28,7 @@ const assignments = [
         },
         expectedOutput: 9, // Best value (items 3 and 4)
         type: 'dp',
+        difficulty: 'Medium',
         code: `({ weights, values, capacity }) => {
             // Implement 0/1 Knapsack DP solution
             // Return the maximum value that fits in the knapsack
@@ -44,6 +45,7 @@ const assignments = [
         },
         expectedOutput: [1, 2], // Order matters
         type: 'custom',
+        difficulty: 'Medium',
         code: `({ array, k }) => {
             // Implement an algorithm to find top K frequent elements
             // Return an array of top K frequent elements
@@ -64,6 +66,7 @@ const assignments = [
         },
         expectedOutput: true,
         type: 'custom',
+        difficulty: 'Medium',
         code: `({ graph }) => {
             // Implement an algorithm to check if the graph is bipartite
             // Return true or false
@@ -80,6 +83,7 @@ const assignments = [
         },
         expectedOutput: 3, // 5+5+1
         type: 'dp',
+        difficulty: 'Hard',
         code: `({ coins, amount }) => {
             // Implement a DP solution to find minimum number of coins for given amount
             // Return the minimum number of coins
@@ -95,6 +99,7 @@ const assignments = [
         },
         expectedOutput: [[1, 6], [8, 10], [15, 18]],
         type: 'custom',
+        difficulty: 'Medium',
         code: `({ intervals }) => {
             // Implement interval merging logic
             // Return merged intervals

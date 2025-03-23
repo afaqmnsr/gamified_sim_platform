@@ -20,8 +20,22 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
 
       const codeToRun = `
       const runAlgo = ${userCode};
-      // Auto detect which arguments to pass
-      if (graph && startNode) {
+
+      // Case 1: If graph + startNode + targetNode exist, pass them as an object (common in JS)
+      if (
+        input &&
+        input.graph &&
+        input.startNode &&
+        typeof input.targetNode !== 'undefined'
+      ) {
+        customResult = runAlgo({
+          graph: input.graph,
+          startNode: input.startNode,
+          targetNode: input.targetNode
+        });
+      } else if (input && input.graph && input.startNode) {
+        traversalOrder = runAlgo(input.graph, input.startNode);
+      } else if (graph && startNode) {
         traversalOrder = runAlgo(graph, startNode);
       } else if (Array.isArray(input)) {
         sortedArray = runAlgo(input);
@@ -49,6 +63,7 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
             sortedArray: sandbox.sortedArray,
             traversalOrder: sandbox.traversalOrder,
             dpResult: sandbox.dpResult,
+            customResult: sandbox.customResult, // Add this line!
             executionTime: `${executionTime} ms`,
             memoryUsage: `${memoryUsage} MB`,
             energyConsumption: `${energyConsumption} J`,
