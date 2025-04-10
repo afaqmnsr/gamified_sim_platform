@@ -54,6 +54,7 @@ function App() {
   const [graphDrawerOpen, setGraphDrawerOpen] = useState(false);
   const [counterexample, setCounterexample] = useState(null);
   const [proofData, setProofData] = useState(null);
+  const [language, setLanguage] = useState('js'); // 'js' or 'python'
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
@@ -63,7 +64,8 @@ function App() {
     if (!algo) return;
 
     setSelectedAlgorithm(algoId);
-    setUserCustomCode(algo.code);
+    // Show Python template or JS by current mode
+    setUserCustomCode(language === 'python' ? algo.pythonCode : algo.code);
 
     if (algo.defaultInput) setInputArray(algo.defaultInput);
     if (algo.defaultGraph) setGraphInput(JSON.stringify(algo.defaultGraph, null, 2));
@@ -97,6 +99,36 @@ function App() {
         showSnackbar('Invalid graph input JSON!', 'error');
         return;
       }
+    }
+
+    if (language === 'python') {
+      let finalInput;
+
+      if (selectedAlgorithm === 'bfs') {
+        finalInput = {
+          graph: parsedGraph,
+          startNode
+        };
+      } else if (selectedAlgorithm === 'lcsDP') {
+        finalInput = {
+          text1: inputArray[0],
+          text2: inputArray[1]
+        };
+      } else if (['knapsackDP', 'knapsackProblem'].includes(selectedAlgorithm)) {
+        finalInput = inputArray; // already structured correctly in defaultInput
+      } else if (selectedAlgorithm === 'fibonacciDP') {
+        finalInput = { input: inputArray[0] }; // expects a number directly
+      } else {
+        finalInput = { input: inputArray }; // default case for sorting
+      }
+
+      const response = await axios.post('http://localhost:5000/run-python-code', {
+        userCode: userCustomCode,
+        inputData: finalInput
+      });
+
+      setResults(response.data);
+      return;
     }
 
     let payload = {
@@ -340,6 +372,8 @@ function App() {
                   setGraphDrawerOpen={setGraphDrawerOpen}
                   isRunning={isRunning}
                   handleRunAlgorithm={handleRunAlgorithm}
+                  language={language}
+                  setLanguage={setLanguage}
                 />
 
                 <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>

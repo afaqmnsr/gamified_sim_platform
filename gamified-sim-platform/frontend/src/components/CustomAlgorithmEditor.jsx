@@ -1,5 +1,15 @@
-import React from 'react';
-import { Box, Button, Typography, TextField, Grid } from '@mui/material';
+import { algorithms } from '../constants/predefinedAlgorithms'
+import {
+    Box,
+    Button,
+    Typography,
+    TextField,
+    Grid,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem
+} from '@mui/material';
 
 // Utility function to check if algorithm expects complex structured input
 const isComplexInputAlgorithm = (algoId) =>
@@ -17,7 +27,9 @@ const CustomAlgorithmEditor = ({
     selectedAlgorithm,
     setGraphDrawerOpen,
     isRunning,
-    handleRunAlgorithm
+    handleRunAlgorithm,
+    language,
+    setLanguage
 }) => {
 
     const handleJsonInputChange = (e) => {
@@ -29,8 +41,31 @@ const CustomAlgorithmEditor = ({
         }
     };
 
+    const handleLanguageChange = (newLang) => {
+        setLanguage(newLang);
+        const algo = algorithms.find((a) => a.id === selectedAlgorithm);
+        if (algo) {
+            setUserCustomCode(newLang === 'python' ? algo.pythonCode : algo.code);
+        }
+    };
+
     return (
         <Box>
+
+            {/* 🧠 Language Selector */}
+            <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="lang-label">Language</InputLabel>
+                <Select
+                    labelId="lang-label"
+                    value={language}
+                    label="Language"
+                    onChange={(e) => handleLanguageChange(e.target.value)}
+                >
+                    <MenuItem value="js">JavaScript</MenuItem>
+                    <MenuItem value="python">Python</MenuItem>
+                </Select>
+            </FormControl>
+
             {/* Code Editor Title */}
             <Typography variant="h5" gutterBottom fontWeight="bold">
                 Algorithm Code Editor
@@ -38,7 +73,7 @@ const CustomAlgorithmEditor = ({
 
             {/* Code Editor */}
             <TextField
-                label="Edit Algorithm Code"
+                label={`Edit Algorithm Code (${language.toUpperCase()})`}
                 multiline
                 minRows={15}
                 fullWidth
@@ -46,6 +81,11 @@ const CustomAlgorithmEditor = ({
                 onChange={(e) => setUserCustomCode(e.target.value)}
                 margin="normal"
                 variant="outlined"
+                placeholder={
+                    language === 'python'
+                        ? `# 🧠 Write your Python function like this:\n# def run(input_data):\n#     arr = input_data["input"]\n#     return sorted(arr)`
+                        : ''
+                }
                 sx={{
                     fontFamily: 'monospace',
                     '& .MuiInputBase-root': {
@@ -104,7 +144,13 @@ const CustomAlgorithmEditor = ({
                                 minRows={6}
                                 fullWidth
                                 value={JSON.stringify(inputArray, null, 2)}
-                                onChange={handleJsonInputChange}
+                                onChange={(e) => {
+                                    try {
+                                        setInputArray(JSON.parse(e.target.value));
+                                    } catch {
+                                        console.warn('Invalid JSON');
+                                    }
+                                }}
                                 helperText="Edit the JSON object for input data."
                             />
                         </Grid>

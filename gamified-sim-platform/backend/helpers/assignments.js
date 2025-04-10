@@ -41,7 +41,8 @@ const assignments = [
                 weightsPositive: true,
                 valuesPositive: true
             }
-        }
+        },
+        expectedResultType: 'dpResult'
     },
     {
         id: 'topKFrequentElements',
@@ -58,7 +59,8 @@ const assignments = [
             // Implement an algorithm to find top K frequent elements
             // Return an array of top K frequent elements
             return [];
-        }`
+        }`,
+        expectedResultType: 'customResult'
     },
     {
         id: 'isGraphBipartite',
@@ -79,7 +81,8 @@ const assignments = [
             // Implement an algorithm to check if the graph is bipartite
             // Return true or false
             return false;
-        }`
+        }`,
+        expectedResultType: 'customResult'
     },
     {
         id: 'coinChange',
@@ -96,7 +99,8 @@ const assignments = [
             // Implement a DP solution to find minimum number of coins for given amount
             // Return the minimum number of coins
             return -1;
-        }`
+        }`,
+        expectedResultType: 'dpResult'
     },
     {
         id: 'mergeIntervals',
@@ -112,7 +116,8 @@ const assignments = [
             // Implement interval merging logic
             // Return merged intervals
             return [];
-        }`
+        }`,
+        expectedResultType: 'customResult'
     }
 
 ];

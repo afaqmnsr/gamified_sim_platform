@@ -161,4 +161,34 @@ app.post('/analyze-symbolic-execution', async (req, res) => {
     }
 });
 
+// Run Python Code
+app.post('/run-python-code', async (req, res) => {
+    const { userCode, inputData } = req.body;
+
+    try {
+        const response = await axios.post('http://localhost:7000/run-python', {
+            code: userCode,
+            input: inputData
+        });
+
+        console.log(response.data)
+
+        const { result, output, error } = response.data;
+        res.json({
+            result,            // universal
+            customResult: result, // backward-compatibility
+            sortedArray: Array.isArray(result) ? result : null, // auto-map for sorting
+            output,
+            error,
+            executionTime: 'N/A',
+            memoryUsage: 'N/A',
+            energyConsumption: 'N/A',
+            score: 'N/A'
+        });
+    } catch (err) {
+        console.error('Python execution failed:', err.message);
+        res.status(500).json({ error: 'Failed to execute Python code' });
+    }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -23,26 +23,24 @@ const ResultsDisplay = ({ selectedAlgorithm, results }) => {
         if (
             ['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm)
         ) {
+            const array = results.sortedArray || results.result; // fallback
             return (
                 <Typography>
                     <strong>Sorted Array:</strong>{' '}
-                    {Array.isArray(results.sortedArray)
-                        ? results.sortedArray.join(', ')
-                        : 'N/A'}
+                    {Array.isArray(array) ? array.join(', ') : 'N/A'}
                 </Typography>
             );
         }
 
-        //  DP Algorithms (Fibonacci, Knapsack, LCS)
+        // DP Algorithms (Fibonacci, Knapsack, LCS)
         if (['fibonacciDP', 'knapsackDP', 'lcsDP'].includes(selectedAlgorithm)) {
+            const dpValue = results.result ?? results.customResult ?? results.dpResult ; // fallback to `result` from Python
+            console.log(results)
+            console.log(dpValue)
             return (
                 <Typography>
                     <strong>Result:</strong>{' '}
-                    {results.dpResult !== null
-                        ? results.dpResult
-                        : typeof results.sortedArray !== 'undefined'
-                            ? results.sortedArray
-                            : 'N/A'}
+                    {typeof dpValue !== 'undefined' ? dpValue : 'N/A'}
                 </Typography>
             );
         }
