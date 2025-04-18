@@ -12,36 +12,57 @@ const ResultsDisplay = ({ selectedAlgorithm, results }) => {
     //  Result Value Display Logic
     const renderResultOutput = () => {
         if (selectedAlgorithm === 'bfs') {
+            const traversalData = results.traversalOrder || results.result?.traversalOrder;
             return (
                 <Typography>
-                    <strong>Traversal Order:</strong> {results.traversalOrder?.join(', ') || 'N/A'}
+                    <strong>Traversal Order:</strong>{' '}
+                    {Array.isArray(traversalData) ? traversalData.join(', ') : 'N/A'}
                 </Typography>
             );
         }
 
         //  Sorting Algorithms return arrays
-        if (
-            ['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm)
-        ) {
-            const array = results.sortedArray || results.result; // fallback
+        if (['bubbleSort', 'quickSort', 'mergeSort'].includes(selectedAlgorithm)) {
+            const array =
+                Array.isArray(results.sortedArray)
+                    ? results.sortedArray
+                    : Array.isArray(results.sortedArray?.result)
+                        ? results.sortedArray.result
+                        : Array.isArray(results.result)
+                            ? results.result
+                            : null;
+
             return (
                 <Typography>
                     <strong>Sorted Array:</strong>{' '}
-                    {Array.isArray(array) ? array.join(', ') : 'N/A'}
+                    {array ? array.join(', ') : 'N/A'}
                 </Typography>
             );
         }
 
         // DP Algorithms (Fibonacci, Knapsack, LCS)
         if (['fibonacciDP', 'knapsackDP', 'lcsDP'].includes(selectedAlgorithm)) {
-            const dpValue = results.result ?? results.customResult ?? results.dpResult ; // fallback to `result` from Python
-            console.log(results)
-            console.log(dpValue)
+            const dpValue = results.result ?? results.customResult ?? results.dpResult;
+            const hasMatrix = !!results.dpMatrix;
+
             return (
-                <Typography>
-                    <strong>Result:</strong>{' '}
-                    {typeof dpValue !== 'undefined' ? dpValue : 'N/A'}
-                </Typography>
+                <>
+                    <Typography>
+                        <strong>Result:</strong>{' '}
+                        {typeof dpValue === 'object' ? JSON.stringify(dpValue) : dpValue ?? 'N/A'}
+                    </Typography>
+
+                    {hasMatrix && (
+                        <Box mt={2}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                DP Matrix:
+                            </Typography>
+                            {/* <pre style={{ fontFamily: 'monospace', fontSize: '13px', overflowX: 'auto' }}>
+                                {JSON.stringify(results.dpMatrix, null, 2)}
+                            </pre> */}
+                        </Box>
+                    )}
+                </>
             );
         }
 

@@ -12,8 +12,9 @@ import GraphDrawer from './components/GraphDrawer';
 import CounterexampleDisplay from './components/CounterexampleDisplay';
 import ProofGraphVisualizer from './components/ProofVisualizer';
 import PetriNetSimulator from './components/PetriNetSimulator';
+import AlgorithmVisualizer from './components/AlgorithmVisualizer';
+import DPMatrixVisualizer from './components/DPMatrixVisualizer';
 import { ReactFlowProvider } from 'reactflow';
-
 
 import {
   Box,
@@ -58,6 +59,7 @@ function App() {
   const [counterexample, setCounterexample] = useState(null);
   const [proofData, setProofData] = useState(null);
   const [language, setLanguage] = useState('js'); // 'js' or 'python'
+  const [currentStep, setCurrentStep] = useState(0);
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
@@ -164,6 +166,23 @@ function App() {
       const response = await axios.post('http://localhost:5000/run-user-algorithm', payload);
       setResults(response.data);
       showSnackbar('Algorithm ran successfully!', 'success');
+
+      let resultData = response.data;
+
+      // 🔧 Flatten result and steps from sortedArray if needed
+      if (resultData.sortedArray && typeof resultData.sortedArray === 'object') {
+        if (!resultData.result && resultData.sortedArray.result) {
+          resultData.result = resultData.sortedArray.result;
+        }
+        if ((!resultData.steps || resultData.steps.length === 0) && resultData.sortedArray.steps) {
+          resultData.steps = resultData.sortedArray.steps;
+        }
+
+        if (resultData.customResult.dpMatrix) {
+          resultData.dpMatrix = resultData.customResult.dpMatrix;
+        }
+      }
+      setResults(resultData);
 
       // SMT Validation (if algo.smtType defined)
       if (algo?.smtType) {
@@ -312,6 +331,15 @@ function App() {
     showSnackbar('Graph saved successfully!', 'success');
   };
 
+  const getCurrentHighlightedCell = (steps, stepIndex) => {
+    if (!steps || stepIndex < 0 || stepIndex >= steps.length) return null;
+    const step = steps[stepIndex];
+    if (step?.type === 'match' || step?.type === 'mismatch' || step?.type === 'choice' || step?.type === 'skip') {
+      return { i: step.i, j: step.j ?? step.w };
+    }
+    return null;
+  };
+
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary', position: 'relative' }}>
       {/* Dark Mode Toggle */}
@@ -416,6 +444,34 @@ function App() {
                 </Paper>
               )}
 
+              {(results?.steps?.length > 0 || results?.sortedArray?.steps?.length > 0) && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Visualization
+                  </Typography>
+                  <AlgorithmVisualizer
+                    steps={results?.steps?.length > 0 ? results.steps : results.sortedArray?.steps}
+                    initialArray={inputArray}
+                    currentStep={currentStep}
+                    setCurrentStep={setCurrentStep}
+                    dpMatrix={results.dpMatrix}
+                  />
+                </Paper>
+              )}
+
+              {Array.isArray(results?.dpMatrix) && results.dpMatrix.length > 0 && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <Typography variant="h6" gutterBottom>
+                    DP Matrix
+                  </Typography>
+                  <DPMatrixVisualizer
+                    dpMatrix={results.dpMatrix}
+                    currentStep={currentStep}
+                    highlightedCell={getCurrentHighlightedCell(results?.steps, currentStep)}
+                  />
+                </Paper>
+              )}
+
               {/* DP Result Display */}
               {results?.dpResult && (
                 <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
@@ -427,7 +483,7 @@ function App() {
               )}
 
               {/* Graph Visualizer for BFS */}
-              {selectedAlgorithm === 'bfs' && results && (
+              {selectedAlgorithm === 'bfs' && results?.traversalOrder && (
                 <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
                   <GraphVisualizer
                     graph={validateJSON(graphInput)}

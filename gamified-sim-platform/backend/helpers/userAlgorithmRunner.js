@@ -10,7 +10,11 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
         traversalOrder: [],
         dpResult: null,     // For DP algorithm results
         customResult: null, // Added for custom assignments
-        console: console
+        console: console,
+        steps: [],
+        recordStep: (step) => {
+          sandbox.steps.push(step);
+        }
     };
 
     const startTime = performance.now();
@@ -41,13 +45,31 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
       } else if (input && input.graph && input.startNode) {
         traversalOrder = runAlgo(input.graph, input.startNode);
       } else if (graph && startNode) {
-        traversalOrder = runAlgo(graph, startNode);
+        const result = runAlgo(graph, startNode);
+        if (typeof result === 'object' && result.traversalOrder) {
+          traversalOrder = result.traversalOrder;
+          if (result.steps) {
+            steps = result.steps;
+          }
+        } else {
+          traversalOrder = result;
+        }
       } else if (Array.isArray(input)) {
         sortedArray = runAlgo(input);
       } else if (typeof input === 'object' || typeof input === 'number') {
         const result = runAlgo(input);
-        if (Array.isArray(result) || typeof result === 'object' || typeof result === 'number' || typeof result === 'boolean') {
-          customResult = result;
+        if (result && typeof result === 'object') {
+          if ('dpMatrix' in result) {
+            dpMatrix = result.dpMatrix;
+          }
+          if ('steps' in result) {
+            steps = result.steps;
+          }
+          if ('result' in result) {
+            dpResult = result.result;
+          } else {
+            customResult = result;
+          }
         } else {
           dpResult = result;
         }
@@ -68,16 +90,18 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
             sortedArray: sandbox.sortedArray,
             traversalOrder: sandbox.traversalOrder,
             dpResult: sandbox.dpResult,
-            customResult: sandbox.customResult, // Add this line!
+            customResult: sandbox.customResult,
+            dpMatrix: sandbox.dpMatrix,
             executionTime: `${executionTime} ms`,
             memoryUsage: `${memoryUsage} MB`,
             energyConsumption: `${energyConsumption} J`,
-            score
+            score,
+            steps: sandbox.steps
         };
-    } catch (err) {
-        console.error(`❌ VM Execution Error: ${err.message}`);
-        throw new Error(`User code failed: ${err.message}`);
-    }
+  } catch (err) {
+    console.error(`❌ VM Execution Error: ${err.message}`);
+    throw new Error(`User code failed: ${err.message}`);
+  }
 }
 
 function calculateScore(execTime, memUsage, energyCons) {
