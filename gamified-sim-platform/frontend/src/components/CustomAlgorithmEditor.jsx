@@ -11,6 +11,29 @@ import {
     MenuItem
 } from '@mui/material';
 
+import AceEditor from 'react-ace';
+import ace from 'ace-builds';
+ace.config.set("basePath", "/ace");
+
+// Modes
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-python';
+
+// Themes
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-github';
+
+// Extensions
+import 'ace-builds/src-noconflict/ext-language_tools';
+
+ace.require('ace/ext/language_tools').addCompleter({
+    getCompletions: (editor, session, pos, prefix, callback) => {
+        callback(null, [
+            { caption: 'customFunction', value: 'customFunction()', meta: 'custom' }
+        ]);
+    }
+});
+
 // Utility function to check if algorithm expects complex structured input
 const isComplexInputAlgorithm = (algoId) =>
     ['knapsackDP', 'lcsDP'].includes(algoId);
@@ -72,26 +95,42 @@ const CustomAlgorithmEditor = ({
             </Typography>
 
             {/* Code Editor */}
-            <TextField
-                label={`Edit Algorithm Code (${language.toUpperCase()})`}
-                multiline
-                minRows={15}
-                fullWidth
+            <AceEditor
+                mode={language === 'python' ? 'python' : 'javascript'}
+                // theme={theme.palette?.mode === 'dark' ? 'monokai' : 'github'}
+                theme="monokai"
+                name="algorithmEditor"
                 value={userCustomCode}
-                onChange={(e) => setUserCustomCode(e.target.value)}
-                margin="normal"
-                variant="outlined"
+                onChange={setUserCustomCode}
+                fontSize={14}
+                width="100%"
+                height="400px"
+                showPrintMargin
+                showGutter
+                highlightActiveLine
                 placeholder={
                     language === 'python'
-                        ? `# 🧠 Write your Python function like this:\n# def run(input_data):\n#     arr = input_data["input"]\n#     return sorted(arr)`
-                        : ''
+                        ? '# 🧠 def run(input_data):\n#     arr = input_data["input"]\n#     return sorted(arr)'
+                        : '// 🧠 function run(input) {\n//     return input.sort();\n// }'
                 }
-                sx={{
-                    fontFamily: 'monospace',
-                    '& .MuiInputBase-root': {
-                        fontSize: '14px'
-                    }
+                setOptions={{
+                    useWorker: true,
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true,
+                    enableSnippets: true,
+                    showLineNumbers: true,
+                    tabSize: 2,
+                    wrap: true,
+                    foldStyle: 'markbeginend',
+                    showFoldWidgets: true,
+                    highlightSelectedWord: true,
+                    highlightActiveLine: true,
+                    displayIndentGuides: true,
+                    cursorStyle: 'smooth',
+                    behavioursEnabled: true,
+                    copyWithEmptySelection: true,
                 }}
+                editorProps={{ $blockScrolling: true }}
             />
 
             {/* Inputs Section */}
