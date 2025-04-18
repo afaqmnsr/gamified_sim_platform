@@ -12,6 +12,7 @@ import GraphDrawer from './components/GraphDrawer';
 import CounterexampleDisplay from './components/CounterexampleDisplay';
 import ProofGraphVisualizer from './components/ProofVisualizer';
 import PetriNetSimulator from './components/PetriNetSimulator';
+import { ReactFlowProvider } from 'reactflow';
 
 
 import {
@@ -438,7 +439,9 @@ function App() {
               {/* Petrinet */}
               {selectedAlgorithm === 'petriNetSim' && (
                 <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-                  <PetriNetSimulator setSnackbar={showSnackbar} />
+                  <ReactFlowProvider>
+                    <PetriNetSimulator setSnackbar={showSnackbar} />
+                  </ReactFlowProvider>
                 </Paper>
               )}
 

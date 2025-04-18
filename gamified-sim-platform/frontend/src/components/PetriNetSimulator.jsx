@@ -15,9 +15,66 @@ import 'reactflow/dist/style.css';
 import {
     Box, Button, Card, CardContent, Typography, TextField, Modal, MenuItem
 } from '@mui/material';
+import ReplayIcon from '@mui/icons-material/Replay';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import SaveIcon from '@mui/icons-material/Save';
+import UndoIcon from '@mui/icons-material/Undo';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
+
 
 import { PetriNet, Place, Transition, Arc } from '../utils/PetriNet';
 import dagre from 'dagre';
+import PlaceNode from './petri-nodes/PlaceNode';
+import TransitionNode from './petri-nodes/TransitionNode';
+
+// Declare nodeTypes at top level
+export const nodeTypes = {
+    place: PlaceNode,
+    transition: TransitionNode,
+};
+
+const PetriNetCanvas = ({
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect
+}) => {
+    const { fitView } = useReactFlow();
+
+    return (
+        <>
+            <Box sx={{ height: 450, border: '1px solid #ccc', borderRadius: 1 }}>
+                <Button variant="outlined" onClick={fitView}>
+                    Zoom to Fit
+                </Button>
+                <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    nodeTypes={nodeTypes}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    fitView
+                    panOnDrag
+                    zoomOnScroll
+                    zoomOnDoubleClick
+                >
+                    <MiniMap />
+                    <Controls />
+                    <Background />
+                </ReactFlow>
+            </Box>
+        </>
+    );
+};
 
 const PetriNetSimulator = ({ setSnackbar }) => {
     const [nodes, setNodes] = useState([]);
@@ -28,6 +85,9 @@ const PetriNetSimulator = ({ setSnackbar }) => {
     const [selectedSource, setSelectedSource] = useState('');
     const [selectedTarget, setSelectedTarget] = useState('');
     const [firedTransitions, setFiredTransitions] = useState([]);
+    const autoFireRef = useRef(null);
+    const [netHistory, setNetHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(0);
 
     const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
     const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
@@ -39,12 +99,12 @@ const PetriNetSimulator = ({ setSnackbar }) => {
         const place = new Place(id, 1);
         net.addPlace(place);
         setNodes((nds) => [...nds, {
-            id,
-            data: { label: `${id} (🔵 1)` },
-            position: { x: Math.random() * 300, y: Math.random() * 300 },
-            type: 'default',
-            style: { backgroundColor: '#3b82f6', color: 'white' }
-        }]);
+                id,
+                type: 'place', // 👈 use custom node type
+                data: { label: `${id} (${place.tokens})` },
+                position: { x: Math.random() * 300, y: Math.random() * 300 },
+            },
+        ]);
     };
 
     const addTransition = () => {
@@ -52,12 +112,12 @@ const PetriNetSimulator = ({ setSnackbar }) => {
         const transition = new Transition(id);
         net.addTransition(transition);
         setNodes((nds) => [...nds, {
-            id,
-            data: { label: id },
-            position: { x: Math.random() * 300, y: Math.random() * 300 },
-            type: 'default',
-            style: { backgroundColor: '#10b981', color: 'white' }
-        }]);
+                id,
+                type: 'transition', // 👈 use custom node type
+                data: { label: id },
+                position: { x: Math.random() * 300, y: Math.random() * 300 },
+            },
+        ]);
     };
 
     const addArc = () => {
@@ -143,6 +203,20 @@ const PetriNetSimulator = ({ setSnackbar }) => {
         updateNodeLabels(newNet);
         setFiredTransitions(prev => [...prev, fired]);
         setSnackbar(`Fired transition ${fired}`, "success");
+    };
+
+    const startAutoFire = () => {
+        if (autoFireRef.current) return;
+        autoFireRef.current = setInterval(() => {
+            const enabled = net.getEnabledTransitions();
+            if (enabled.length === 0) return stopAutoFire();
+            fireNextTransition(); // you already defined this
+        }, 1000);
+    };
+
+    const stopAutoFire = () => {
+        clearInterval(autoFireRef.current);
+        autoFireRef.current = null;
     };
 
     const updateNodeLabels = (updatedNet) => {
@@ -231,43 +305,67 @@ const PetriNetSimulator = ({ setSnackbar }) => {
         return newNodes;
     };
 
-    const PetriNetCanvas = ({
-        nodes,
-        edges,
-        onNodesChange,
-        onEdgesChange,
-        onConnect
-    }) => {
-        const { fitView } = useReactFlow();
+    const setPlaceTokens = (placeId, newTokenCount) => {
+        const place = net.getPlace(placeId);
+        if (!place) return;
+        place.tokens = newTokenCount;
+        updateNodeLabels(net.clone());
+    };
 
-        return (
-            <>
-                <Box sx={{ height: 450, border: '1px solid #ccc', borderRadius: 1 }}>
-                    <ReactFlow
-                        nodes={nodes}
-                        edges={edges}
-                        onNodesChange={onNodesChange}
-                        onEdgesChange={onEdgesChange}
-                        onConnect={onConnect}
-                        fitView
-                        panOnDrag
-                        zoomOnScroll
-                        zoomOnDoubleClick
-                    >
-                        <MiniMap />
-                        <Controls />
-                        <Background />
-                    </ReactFlow>
-                </Box>
+    const saveSnapshot = (net) => {
+        setNetHistory(prev => [...prev, net.clone()]);
+    };
 
-                {/* 👉 Place outside to avoid overlap */}
-                <Box display="flex" justifyContent="center" mt={2}>
-                    <Button variant="outlined" onClick={fitView}>
-                        Zoom to Fit
-                    </Button>
-                </Box>
-            </>
-        );
+    const stepBack = () => {
+        if (historyIndex <= 0) return;
+        const previous = netHistory[historyIndex - 1];
+        setNet(previous.clone());
+        setHistoryIndex(historyIndex - 1);
+        updateNodeLabels(previous);
+    };
+
+    const exportNet = () => {
+        const data = {
+            places: net.places.map(p => ({ id: p.id, tokens: p.tokens })),
+            transitions: net.transitions.map(t => ({ id: t.id })),
+            arcs: net.arcs.map(a => ({ source: a.source.id, target: a.target.id })),
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'petrinet.json';
+        a.click();
+    };
+
+    const importNet = (jsonData) => {
+        const newNet = new PetriNet();
+        const newNodes = [];
+        const newEdges = [];
+
+        jsonData.places.forEach(p => {
+            const place = new Place(p.id, p.tokens);
+            newNet.addPlace(place);
+            newNodes.push({ id: p.id, type: 'place', data: { label: `${p.id} (${p.tokens})` }, position: { x: 0, y: 0 } });
+        });
+
+        jsonData.transitions.forEach(t => {
+            const trans = new Transition(t.id);
+            newNet.addTransition(trans);
+            newNodes.push({ id: t.id, type: 'transition', data: { label: t.id }, position: { x: 0, y: 0 } });
+        });
+
+        jsonData.arcs.forEach(a => {
+            const source = newNet.places.find(p => p.id === a.source) || newNet.transitions.find(t => t.id === a.source);
+            const target = newNet.places.find(p => p.id === a.target) || newNet.transitions.find(t => t.id === a.target);
+            const arc = new Arc(source, target);
+            newNet.addArc(arc);
+            newEdges.push({ id: `arc-${a.source}-${a.target}`, source: a.source, target: a.target });
+        });
+
+        setNet(newNet);
+        setNodes(layoutNodes(newNodes, newEdges));
+        setEdges(newEdges);
     };
 
     return (
@@ -287,22 +385,64 @@ const PetriNetSimulator = ({ setSnackbar }) => {
                     </ReactFlowProvider>
                 </Box>
 
-                <Box display="flex" gap={2} justifyContent="center">
-                    <Button variant="contained" onClick={addPlace}>Add Place</Button>
-                    <Button variant="contained" color="success" onClick={addTransition}>Add Transition</Button>
-                    {/* <Button variant="outlined" onClick={addArc}>Add Arc (P ➝ T)</Button> */}
-                    <Button variant="contained" color="primary" onClick={fireEnabledTransitions}>Fire Enabled Transitions</Button>
-                    <Button variant="outlined" color="secondary" onClick={fireNextTransition}>Step Fire</Button>
-                    <Button variant="outlined" onClick={resetReplay}>Reset Step</Button>
-                    <Button variant="outlined" size="small" color="error" onClick={() => setFiredTransitions([])}>
-                        Clear Log
+                <Box display="flex" flexWrap="wrap" gap={1.5} justifyContent="center" mt={8} mb={1}>
+                    <Button variant="contained" onClick={addPlace} startIcon={<AddCircleOutlineIcon />}>
+                        Add Place
+                    </Button>
+                    <Button variant="contained" color="success" onClick={addTransition} startIcon={<AddCircleOutlineIcon />}>
+                        Add Transition
+                    </Button>
+                    <Button variant="outlined" onClick={addArc}>
+                        ➕ Add Arc
                     </Button>
 
-                    {/* Auto Layout */}
-                    <Button variant="outlined" onClick={() => setNodes(layoutNodes(nodes, edges))}>
+                    <Button variant="contained" color="primary" onClick={fireEnabledTransitions} startIcon={<FlashOnIcon />}>
+                        Fire All
+                    </Button>
+                    <Button variant="outlined" color="secondary" onClick={fireNextTransition} startIcon={<PlayArrowIcon />}>
+                        Step Fire
+                    </Button>
+                    <Button variant="outlined" onClick={resetReplay} startIcon={<ReplayIcon />}>
+                        Reset Step
+                    </Button>
+
+                    <Button variant="outlined" color="secondary" onClick={startAutoFire} startIcon={<PlayArrowIcon />}>
+                        Auto Fire
+                    </Button>
+                    <Button variant="outlined" color="secondary" onClick={stopAutoFire} startIcon={<StopIcon />}>
+                        Stop Auto
+                    </Button>
+
+                    <Button variant="outlined" onClick={() => setNodes(layoutNodes(nodes, edges))} startIcon={<AutoFixHighIcon />}>
                         Auto Layout
                     </Button>
 
+                    <Button variant="outlined" color="warning" onClick={stepBack} startIcon={<UndoIcon />}>
+                        Step Back
+                    </Button>
+                    <Button variant="outlined" color="error" size="small" onClick={() => setFiredTransitions([])} startIcon={<CleaningServicesIcon />}>
+                        Clear Log
+                    </Button>
+
+                    <Button variant="outlined" onClick={() => saveSnapshot(net)} startIcon={<SaveIcon />}>
+                        Save Snapshot
+                    </Button>
+                    <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
+                        Import Net
+                        <input type="file" hidden onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                                const content = JSON.parse(ev.target.result);
+                                importNet(content);
+                            };
+                            reader.readAsText(file);
+                        }} />
+                    </Button>
+                    <Button variant="outlined" onClick={exportNet} startIcon={<DownloadIcon />}>
+                        Export Net
+                    </Button>
                 </Box>
 
                 {/* Arc Selection Dropdowns */}
