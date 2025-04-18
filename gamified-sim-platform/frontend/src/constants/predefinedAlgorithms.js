@@ -310,5 +310,13 @@ export const algorithms = [
       }
     },
     smtType: 'isGraphBipartite'
+  },
+  {
+    id: 'petriNetSim',
+    name: 'Petri Net Simulator',
+    code: '// Petri Net logic is handled visually, no code required',
+    pythonCode: '',
+    defaultInput: null,
+    type: 'petri' // add a custom type to handle it separately
   }
 ];

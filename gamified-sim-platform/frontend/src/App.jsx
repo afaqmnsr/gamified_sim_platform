@@ -10,7 +10,9 @@ import AssignmentList from './components/AssignmentList';
 import AssignmentLeaderboard from './components/AssignmentLeaderboard';
 import GraphDrawer from './components/GraphDrawer';
 import CounterexampleDisplay from './components/CounterexampleDisplay';
-import ProofGraphVisualizer from './components/ProofVisualizer'; // ✅ You already have this!
+import ProofGraphVisualizer from './components/ProofVisualizer';
+import PetriNetSimulator from './components/PetriNetSimulator';
+
 
 import {
   Box,
@@ -64,6 +66,16 @@ function App() {
     if (!algo) return;
 
     setSelectedAlgorithm(algoId);
+
+    if (algo.type === 'petri') {
+      // No code or input needed
+      setUserCustomCode('');
+      setInputArray([]);
+      setGraphInput('');
+      setStartNode('');
+      return;
+    }
+
     // Show Python template or JS by current mode
     setUserCustomCode(language === 'python' ? algo.pythonCode : algo.code);
 
@@ -81,6 +93,11 @@ function App() {
   };
 
   const handleRunAlgorithm = async () => {
+    if (selectedAlgorithm === 'petriNetSim') {
+      showSnackbar('Use the visual interface below to simulate the Petri Net.', 'info');
+      return;
+    }
+
     if (!selectedAlgorithm) {
       return showSnackbar('Please select an algorithm', 'warning');
     }
@@ -340,7 +357,7 @@ function App() {
           centered
           sx={{ mb: 4 }}
         >
-          <Tab label="Algorithm Simulator" />
+          <Tab label={selectedAlgorithm === 'petriNetSim' ? "Petri Net Simulator" : "Algorithm Simulator"} />
           <Tab label="Assignments" />
         </Tabs>
 
@@ -358,41 +375,45 @@ function App() {
               </Paper>
 
               {/* Code Editor & Inputs */}
-              <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-                <CustomAlgorithmEditor
-                  userCustomCode={userCustomCode}
-                  setUserCustomCode={setUserCustomCode}
-                  inputArray={inputArray}
-                  setInputArray={setInputArray}
-                  graphInput={graphInput}
-                  setGraphInput={setGraphInput}
-                  startNode={startNode}
-                  setStartNode={setStartNode}
-                  selectedAlgorithm={selectedAlgorithm}
-                  setGraphDrawerOpen={setGraphDrawerOpen}
-                  isRunning={isRunning}
-                  handleRunAlgorithm={handleRunAlgorithm}
-                  language={language}
-                  setLanguage={setLanguage}
-                />
+              {selectedAlgorithm !== 'petriNetSim' && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <CustomAlgorithmEditor
+                    userCustomCode={userCustomCode}
+                    setUserCustomCode={setUserCustomCode}
+                    inputArray={inputArray}
+                    setInputArray={setInputArray}
+                    graphInput={graphInput}
+                    setGraphInput={setGraphInput}
+                    startNode={startNode}
+                    setStartNode={setStartNode}
+                    selectedAlgorithm={selectedAlgorithm}
+                    setGraphDrawerOpen={setGraphDrawerOpen}
+                    isRunning={isRunning}
+                    handleRunAlgorithm={handleRunAlgorithm}
+                    language={language}
+                    setLanguage={setLanguage}
+                  />
 
-                <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={handleRunAlgorithm}
-                    disabled={isRunning}
-                  >
-                    {isRunning ? 'Running...' : 'Run Algorithm'}
-                  </Button>
-                </Box>
-              </Paper>
+                  <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      onClick={handleRunAlgorithm}
+                      disabled={isRunning}
+                    >
+                      {isRunning ? 'Running...' : 'Run Algorithm'}
+                    </Button>
+                  </Box>
+                </Paper>
+              )}
 
               {/* Results Display */}
-              <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-                <ResultsDisplay selectedAlgorithm={selectedAlgorithm} results={results} />
-              </Paper>
+              {selectedAlgorithm !== 'petriNetSim' && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <ResultsDisplay selectedAlgorithm={selectedAlgorithm} results={results} />
+                </Paper>
+              )}
 
               {/* DP Result Display */}
               {results?.dpResult && (
@@ -413,6 +434,14 @@ function App() {
                   />
                 </Paper>
               )}
+
+              {/* Petrinet */}
+              {selectedAlgorithm === 'petriNetSim' && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <PetriNetSimulator setSnackbar={showSnackbar} />
+                </Paper>
+              )}
+
             </Grid>
 
             {/* Leaderboard */}
