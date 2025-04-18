@@ -178,7 +178,7 @@ function App() {
           resultData.steps = resultData.sortedArray.steps;
         }
 
-        if (resultData.customResult.dpMatrix) {
+        if (resultData?.customResult?.dpMatrix) {
           resultData.dpMatrix = resultData.customResult.dpMatrix;
         }
       }
