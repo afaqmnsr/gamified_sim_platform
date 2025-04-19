@@ -191,4 +191,19 @@ app.post('/run-python-code', async (req, res) => {
     }
 });
 
+app.post('/admin/add-assignment', (req, res) => {
+    const newAssignment = {
+        id: req.body.title.toLowerCase().replace(/\s+/g, ''),
+        ...req.body
+    };
+
+    assignments.push(newAssignment);
+    // Optional: save to file/db later
+    res.json({ message: 'Assignment added!', assignment: newAssignment });
+});
+
+app.get('/admin/submissions', (req, res) => {
+    res.json(assignmentSubmissions);
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -14,6 +14,7 @@ import ProofGraphVisualizer from './components/ProofVisualizer';
 import PetriNetSimulator from './components/PetriNetSimulator';
 import AlgorithmVisualizer from './components/AlgorithmVisualizer';
 import DPMatrixVisualizer from './components/DPMatrixVisualizer';
+import AdminPanel from './components/AdminPanel';
 import { ReactFlowProvider } from 'reactflow';
 
 import {
@@ -51,7 +52,7 @@ function App() {
   const [assignmentCode, setAssignmentCode] = useState('');
   const [reloadLeaderboard, setReloadLeaderboard] = useState(false);
 
-  const [tabValue, setTabValue] = useState(0); // 0 = Simulator, 1 = Assignments
+  const [tabValue, setTabValue] = useState(0); // 0 = Simulator, 1 = Assignments, 2 = Admin
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'error' | 'success' | 'info'
@@ -388,6 +389,7 @@ function App() {
         >
           <Tab label={selectedAlgorithm === 'petriNetSim' ? "Petri Net Simulator" : "Algorithm Simulator"} />
           <Tab label="Assignments" />
+          <Tab label="Admin" />
         </Tabs>
 
         {/* ALGORITHM SIMULATOR TAB */}
@@ -647,6 +649,10 @@ function App() {
               )}
             </Grid>
           </Grid>
+        )}
+
+        {tabValue === 2 && (
+          <AdminPanel />
         )}
       </Container>
     </Box>
