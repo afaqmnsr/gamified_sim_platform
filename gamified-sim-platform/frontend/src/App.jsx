@@ -7,6 +7,7 @@ import ResultsDisplay from './components/ResultsDisplay';
 import GraphVisualizer from './components/GraphVisualizer';
 import Leaderboard from './components/Leaderboard';
 import AssignmentList from './components/AssignmentList';
+import AssignmentTree from './components/AssignmentTree';
 import AssignmentLeaderboard from './components/AssignmentLeaderboard';
 import GraphDrawer from './components/GraphDrawer';
 import CounterexampleDisplay from './components/CounterexampleDisplay';
@@ -627,6 +628,15 @@ function App() {
                 />
               </Paper>
             </Grid>
+
+            {/* <Grid item xs={12} md={4} lg={3}>
+              <Paper elevation={3} sx={{ p: 3 }}>
+                <AssignmentTree onSelectAssignment={(assignment) => {
+                  setSelectedAssignment(assignment);
+                  setAssignmentCode(assignment.code || '');
+                }} />
+              </Paper>
+            </Grid> */}
 
             {/* Right: Assignment Code Editor + Leaderboard */}
             <Grid item xs={12} md={8} lg={9}>
