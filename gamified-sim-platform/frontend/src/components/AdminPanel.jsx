@@ -40,10 +40,16 @@ const AdminPanel = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/assignments').then(res => {
+        axios.get('http://localhost:5000/assignments', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            withCredentials: true
+        }).then(res => {
             setAssignments(res.data);
             setAllAssignments(res.data); // ✅ Save all
         });
+
     }, []);
 
     useEffect(() => {
@@ -68,9 +74,14 @@ const AdminPanel = () => {
             const parsedExpected = JSON.parse(newAssignment.expectedOutput);
 
             await axios.post('http://localhost:5000/admin/add-assignment', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                withCredentials: true
+            }, {
                 ...newAssignment,
                 input: parsedInput,
-                expectedOutput: parsedExpected
+                expectedOutput: parsedExpected,
             });
 
             // Optimistically update frontend state
@@ -101,6 +112,11 @@ const AdminPanel = () => {
             const parsedExpected = JSON.parse(newAssignment.expectedOutput);
 
             await axios.put(`http://localhost:5000/admin/update-assignment/${newAssignment.id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                withCredentials: true
+            }, {
                 ...newAssignment,
                 input: parsedInput,
                 expectedOutput: parsedExpected
@@ -121,7 +137,12 @@ const AdminPanel = () => {
 
     const handleDeleteAssignment = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/admin/delete-assignment/${id}`);
+            await axios.delete(`http://localhost:5000/admin/delete-assignment/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                withCredentials: true
+            });
             setAssignments(prev => prev.filter(a => a.id !== id));
         } catch (err) {
             console.error('Delete failed:', err);
@@ -130,7 +151,12 @@ const AdminPanel = () => {
     };
 
     const fetchSubmissions = () => {
-        axios.get('http://localhost:5000/admin/submissions').then(res => setSubmissions(res.data));
+        axios.get('http://localhost:5000/admin/submissions', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            withCredentials: true
+        }).then(res => setSubmissions(res.data));
     };
 
     const handleRoleChange = async (userId, newRole) => {
@@ -140,7 +166,8 @@ const AdminPanel = () => {
             }, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
+                },
+                withCredentials: true
             });
 
             setUsers((prev) =>

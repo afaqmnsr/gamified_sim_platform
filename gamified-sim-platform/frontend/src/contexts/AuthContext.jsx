@@ -3,9 +3,16 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
-const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+const fetchUserWithToken = async (token) => {
+    try {
+        const { data } = await axios.get('http://localhost:5000/api/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
+        });
+        return data;
+    } catch (err) {
+        throw err;
+    }
 };
 
 export const AuthProvider = ({ children }) => {
@@ -23,7 +30,11 @@ export const AuthProvider = ({ children }) => {
         await fetchUser(); // fetch fresh user details
     };
 
-    
+    const logout = () => {
+        localStorage.removeItem('token');
+        setUser(null);
+    };
+
     const register = async (name, email, password) => {
         const { data } = await axios.post('http://localhost:5000/api/auth/register', 
             { name, email, password },
@@ -65,6 +76,7 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const refreshAccessToken = async () => {
+    
     try {
         const { data } = await axios.post(
             'http://localhost:5000/api/auth/refresh',
@@ -72,10 +84,11 @@ export const refreshAccessToken = async () => {
             { withCredentials: true }
         );
         localStorage.setItem('token', data.token);
-        await fetchUser(); // 🆕 so user stays up-to-date
+        await fetchUserWithToken(data.token);
         return data.token;
     } catch (err) {
-        logout(); // gracefully logout
+        // localStorage.removeItem('token');
+        // window.location.href = '/login'; // or use a router to navigate
         throw err;
     }
 };
