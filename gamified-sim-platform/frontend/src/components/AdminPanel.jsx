@@ -25,6 +25,16 @@ const AdminPanel = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10); // instead of 5
 
     const [selectedAssignmentFilter, setSelectedAssignmentFilter] = useState('');
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:5000/admin/users', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            withCredentials: true
+        }).then(res => setUsers(res.data));
+    }, []);
 
     useEffect(() => {
         axios.get('http://localhost:5000/assignments').then(res => {
@@ -415,6 +425,28 @@ const AdminPanel = () => {
                 />
 
             </Paper>
+
+            <Typography variant="h6" sx={{ mt: 6, mb: 2 }}>User List</Typography>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Role</TableCell>
+                        <TableCell>Registered</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {users.map((u, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell>{u.name || u.username}</TableCell>
+                            <TableCell>{u.email}</TableCell>
+                            <TableCell>{u.role}</TableCell>
+                            <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
 
             <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{previewAssignment?.title}</DialogTitle>

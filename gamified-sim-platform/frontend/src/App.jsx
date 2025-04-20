@@ -36,9 +36,18 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import { ColorModeContext } from './contexts/ThemeContext';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
+import { useAuth } from './contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 
 function App() {
+  const { user, logout } = useAuth();
+  if (!user) return <Navigate to="/login" />;
+
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
   const [userCustomCode, setUserCustomCode] = useState('');
   const [inputArray, setInputArray] = useState([]);
@@ -61,6 +70,10 @@ function App() {
   const [proofData, setProofData] = useState(null);
   const [language, setLanguage] = useState('js'); // 'js' or 'python'
   const [currentStep, setCurrentStep] = useState(0);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
@@ -216,10 +229,12 @@ function App() {
 
     try {
       setIsRunning(true);
+      const { user } = useAuth();
+
       const response = await axios.post('http://localhost:5000/submit-assignment', {
         assignmentId: selectedAssignment.id,
         userCode: assignmentCode,
-        username: 'Player'
+        username: user?.name || 'Anonymous'
       });
 
       showSnackbar(response.data.message, response.data.isCorrect ? 'success' : 'warning');
@@ -343,14 +358,24 @@ function App() {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary', position: 'relative' }}>
-      {/* Dark Mode Toggle */}
-      <IconButton
-        onClick={colorMode.toggleColorMode}
-        sx={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}
-        color="inherit"
-      >
-        {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-      </IconButton>
+      
+      <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <IconButton onClick={handleMenu} color="inherit">
+          <img
+            src={`https://ui-avatars.com/api/?name=${user.username}&background=random`}
+            alt={user.username}
+            style={{ width: 36, height: 36, borderRadius: '50%' }}
+          />
+        </IconButton>
+
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem disabled>{user.username} ({user.role})</MenuItem>
+          <MenuItem onClick={colorMode.toggleColorMode}>
+            {theme.palette.mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </MenuItem>
+          <MenuItem onClick={logout}>Logout</MenuItem>
+        </Menu>
+      </Box>
 
       {/* Progress Bar */}
       {isRunning && (
@@ -651,7 +676,7 @@ function App() {
           </Grid>
         )}
 
-        {tabValue === 2 && (
+        {tabValue === 2 && user?.role === 'admin' && (
           <AdminPanel />
         )}
       </Container>

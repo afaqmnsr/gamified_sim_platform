@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "konva": "^9.3.20",
     "mongoose": "^8.13.2",
+    "nodemailer": "^6.10.1",
     "petri-js": "^0.0.3",
     "react": "^19.0.0",
     "react-ace": "^14.0.1",

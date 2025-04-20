@@ -3,15 +3,54 @@ const cors = require('cors');
 const axios = require('axios');  // ✅
 const app = express();
 const _ = require('lodash');
+const cookieParser = require('cookie-parser');
+const User = require('./models/User');
 const PORT = 5000;
+
+// Allow CORS from localhost:5173 (Vite dev server)
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
+app.options('*', cors());
+app.use(express.json());
+app.use(cookieParser());
+
+const mongoose = require('mongoose');
+const authRoutes = require('./routes/auth');
+
+mongoose.connect('mongodb://localhost:27017/algorithmSimulator', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log('✅ MongoDB connected'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
+
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'super_secret_key_change_me';
 
 const { runUserCode } = require('./helpers/userAlgorithmRunner');
 const { assignments } = require('./helpers/assignments');
 
 let assignmentSubmissions = []; // In-memory storage for scores
 
-app.use(cors());
-app.use(express.json());
+
+function authenticate(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+app.use('/api/auth', authRoutes);
 
 // Run Algorithm
 app.post('/run-user-algorithm', async (req, res) => {
@@ -36,8 +75,9 @@ app.get('/assignments', (req, res) => {
 });
 
 // Submit assignment and auto-evaluate
-app.post('/submit-assignment', async (req, res) => {
+app.post('/submit-assignment', authenticate, async (req, res) => {
     const { assignmentId, userCode, username = 'Anonymous' } = req.body;
+    // const username = req.user.email;
 
     try {
         const assignment = assignments.find(a => a.id === assignmentId);
@@ -191,7 +231,7 @@ app.post('/run-python-code', async (req, res) => {
     }
 });
 
-app.post('/admin/add-assignment', (req, res) => {
+app.post('/admin/add-assignment', authenticate, (req, res) => {
     const newAssignment = {
         id: req.body.title.toLowerCase().replace(/\s+/g, ''),
         ...req.body
@@ -202,7 +242,7 @@ app.post('/admin/add-assignment', (req, res) => {
     res.json({ message: 'Assignment added!', assignment: newAssignment });
 });
 
-app.put('/admin/update-assignment/:id', (req, res) => {
+app.put('/admin/update-assignment/:id', authenticate, (req, res) => {
     const { id } = req.params;
     const index = assignments.findIndex(a => a.id === id);
 
@@ -223,6 +263,14 @@ app.put('/admin/update-assignment/:id', (req, res) => {
 
 app.get('/admin/submissions', (req, res) => {
     res.json(assignmentSubmissions);
+});
+
+app.get('/admin/users', authenticate, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    if (user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const users = await User.find().select('-password');
+    res.json(users);
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
