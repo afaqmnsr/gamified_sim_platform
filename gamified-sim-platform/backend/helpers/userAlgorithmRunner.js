@@ -56,6 +56,12 @@ async function runUserCode({ userCode, inputData, graph, startNode }) {
         }
       } else if (Array.isArray(input)) {
         sortedArray = runAlgo(input);
+      } else if (input && input.graph && input.source && input.sink) {
+        customResult = runAlgo({
+          graph: input.graph,
+          source: input.source,
+          sink: input.sink
+        });
       } else if (typeof input === 'object' || typeof input === 'number') {
         const result = runAlgo(input);
         if (result && typeof result === 'object') {

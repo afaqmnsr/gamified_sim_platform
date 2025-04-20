@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Slider, Button, Box, Typography } from '@mui/material';
 
-const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep, dpMatrix }) => {
+const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep, dpMatrix, selectedAlgorithm }) => {
 
     const [playing, setPlaying] = useState(false);
     const intervalRef = useRef(null);
@@ -11,8 +11,19 @@ const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep,
     const [traversed, setTraversed] = useState([]);
     const [speed, setSpeed] = useState(500); // Default speed
     const timerRef = useRef(null);
+    const [flowMap, setFlowMap] = useState({});
+    const [edgeHighlights, setEdgeHighlights] = useState({});
+    const [currentMaxFlow, setCurrentMaxFlow] = useState(0);
 
     const MAX_BAR_HEIGHT = 180;
+
+    const setEdgeHighlight = (edgeId, type) => {
+        setEdgeHighlights(prev => ({ ...prev, [edgeId]: type }));
+    };
+
+    const setEdgeFlow = (edgeId, flow) => {
+        setFlowMap(prev => ({ ...prev, [edgeId]: flow }));
+    };
 
     const getNormalizedHeights = (arr) => {
         const max = Math.max(...arr, 1);
@@ -55,6 +66,16 @@ const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep,
             case 'skip':
                 setHighlighted([`${step.i},${step.w}`]);
                 break;
+            case 'explore':
+                setHighlighted([step.from, step.to]);
+                setEdgeHighlight(`${step.from}-${step.to}`, 'explore');
+                break;
+            case 'augment':
+                setEdgeFlow(`${step.from}-${step.to}`, step.flow);
+                break;
+            case 'path-complete':
+                setCurrentMaxFlow(step.currentMax);
+                break;
             default:
                 break;
         }
@@ -64,8 +85,12 @@ const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep,
         setArray([...initialArray]);
         setHighlighted([]);
         setTraversed([]);
+        setEdgeHighlights({});
+        setFlowMap({});
+        setCurrentMaxFlow(0);
         setCurrentStep(0);
         clearTimeout(timerRef.current);
+        handleStep(0); // 👈 trigger first step immediately
     }, [steps, initialArray]);
 
     useEffect(() => {
@@ -181,6 +206,21 @@ const AlgorithmVisualizer = ({ steps, initialArray, currentStep, setCurrentStep,
                     </Box>
                 </Box>
             )}
+
+            {selectedAlgorithm === 'maxFlow' && (
+                <Box mt={4}>
+                    <Typography variant="h6">Flow Network</Typography>
+                    {Object.entries(flowMap).map(([edge, flow]) => (
+                        <Typography key={edge}>
+                            Edge {edge}: Flow {flow} {edgeHighlights[edge] === 'explore' ? '🔍' : ''}
+                        </Typography>
+                    ))}
+                    <Typography variant="body1" mt={2}>
+                        Current Max Flow: <strong>{currentMaxFlow}</strong>
+                    </Typography>
+                </Box>
+            )}
+
         </Box>
     );
 };

@@ -15,6 +15,7 @@ import PetriNetSimulator from './components/PetriNetSimulator';
 import AlgorithmVisualizer from './components/AlgorithmVisualizer';
 import DPMatrixVisualizer from './components/DPMatrixVisualizer';
 import AdminPanel from './components/AdminPanel';
+import FlowNetworkVisualizer from './components/FlowNetworkVisualizer';
 import { ReactFlowProvider } from 'reactflow';
 
 import {
@@ -97,10 +98,16 @@ function App() {
 
     // Show Python template or JS by current mode
     setUserCustomCode(language === 'python' ? algo.pythonCode : algo.code);
-
-    if (algo.defaultInput) setInputArray(algo.defaultInput);
-    if (algo.defaultGraph) setGraphInput(JSON.stringify(algo.defaultGraph, null, 2));
-    if (algo.defaultStartNode) setStartNode(algo.defaultStartNode);
+    console.log('Algo:', algo);
+    if (algo.id === 'maxFlow' && algo.defaultInput) {
+      console.log('Default Algo:', algo);
+      setInputArray([algo.defaultInput.source, algo.defaultInput.sink]);
+      setGraphInput(JSON.stringify(algo.defaultInput.graph, null, 2));
+    } else {
+      if (algo.defaultInput) setInputArray(algo.defaultInput);
+      if (algo.defaultGraph) setGraphInput(JSON.stringify(algo.defaultGraph, null, 2));
+      if (algo.defaultStartNode) setStartNode(algo.defaultStartNode);
+    }
   };
 
   const validateJSON = (str) => {
@@ -154,6 +161,12 @@ function App() {
         finalInput = inputArray; // already structured correctly in defaultInput
       } else if (selectedAlgorithm === 'fibonacciDP') {
         finalInput = { input: inputArray[0] }; // expects a number directly
+      } else if (selectedAlgorithm === 'maxFlow') {
+        finalInput = {
+          graph: parsedGraph,
+          source: inputArray[0],
+          sink: inputArray[1]
+        };
       } else {
         finalInput = { input: inputArray }; // default case for sorting
       }
@@ -173,6 +186,14 @@ function App() {
       graph: (selectedAlgorithm === 'bfs' && parsedGraph) ? parsedGraph : null,
       startNode: (selectedAlgorithm === 'bfs' && startNode) ? startNode : null
     };
+
+    if (selectedAlgorithm === 'maxFlow') {
+      payload.inputData = {
+        graph: parsedGraph,
+        source: inputArray[0],
+        sink: inputArray[1]
+      };
+    }
 
     try {
       setIsRunning(true);
@@ -383,9 +404,9 @@ function App() {
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem disabled>{user.username} ({user.role})</MenuItem>
           <MenuItem onClick={colorMode.toggleColorMode}>
-            {theme.palette.mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {theme.palette.mode === 'dark' ? '☀ Light Mode' : '🌙 Dark Mode'}
           </MenuItem>
-          <MenuItem onClick={logout}>Logout</MenuItem>
+          <MenuItem onClick={logout}>🚪 Logout</MenuItem>
         </Menu>
       </Box>
 
@@ -489,11 +510,33 @@ function App() {
                     Visualization
                   </Typography>
                   <AlgorithmVisualizer
-                    steps={results?.steps?.length > 0 ? results.steps : results.sortedArray?.steps}
-                    initialArray={inputArray}
+                    steps={
+                      results?.steps?.length > 0
+                        ? results.steps
+                        : results?.sortedArray?.steps?.length > 0
+                          ? results.sortedArray.steps
+                          : results?.customResult?.steps || []
+                    }
+                    initialArray={
+                      selectedAlgorithm === 'maxFlow'
+                        ? []
+                        : inputArray
+                    }
                     currentStep={currentStep}
                     setCurrentStep={setCurrentStep}
                     dpMatrix={results.dpMatrix}
+                    selectedAlgorithm={selectedAlgorithm}
+                  />
+                </Paper>
+              )}
+
+              {selectedAlgorithm === 'maxFlow' && results?.customResult?.steps && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                  <FlowNetworkVisualizer
+                    graph={validateJSON(graphInput)}
+                    steps={results?.customResult?.steps || []}
+                    currentStep={currentStep}
+                    setCurrentStep={setCurrentStep}
                   />
                 </Paper>
               )}

@@ -373,5 +373,110 @@ export const algorithms = [
     pythonCode: '',
     defaultInput: null,
     type: 'petri' // add a custom type to handle it separately
+  },
+  {
+    id: 'maxFlow',
+    name: 'Max Flow (Edmonds-Karp)',
+    code: `({ graph, source, sink }) => {
+      const residualGraph = JSON.parse(JSON.stringify(graph));
+      const parent = {};
+      const steps = [];
+      const bfs = (s, t) => {
+        const visited = new Set();
+        const queue = [s];
+        visited.add(s);
+        parent[s] = null;
+
+        while (queue.length) {
+          const u = queue.shift();
+          for (let v in residualGraph[u]) {
+            if (!visited.has(v) && residualGraph[u][v] > 0) {
+              visited.add(v);
+              parent[v] = u;
+              steps.push({ type: 'explore', from: u, to: v });
+              if (v === t) return true;
+              queue.push(v);
+            }
+          }
+        }
+        return false;
+      };
+
+      let maxFlow = 0;
+      while (bfs(source, sink)) {
+        let pathFlow = Infinity;
+        let s = sink;
+        while (s !== source) {
+          pathFlow = Math.min(pathFlow, residualGraph[parent[s]][s]);
+          s = parent[s];
+        }
+
+        s = sink;
+        while (s !== source) {
+          const u = parent[s];
+          residualGraph[u][s] -= pathFlow;
+          residualGraph[s] = residualGraph[s] || {};
+          residualGraph[s][u] = (residualGraph[s][u] || 0) + pathFlow;
+          steps.push({ type: 'augment', from: u, to: s, flow: pathFlow });
+          s = u;
+        }
+
+        maxFlow += pathFlow;
+        steps.push({ type: 'path-complete', flow: pathFlow, currentMax: maxFlow });
+      }
+
+      return { result: maxFlow, steps };
+    }`,
+    pythonCode: `def run(input_data):
+      from collections import deque
+      graph = input_data["graph"]
+      source = input_data["source"]
+      sink = input_data["sink"]
+      residual = {u: dict(v) for u, v in graph.items()}
+      max_flow = 0
+
+      def bfs(s, t, parent):
+          visited = set([s])
+          queue = deque([s])
+          while queue:
+              u = queue.popleft()
+              for v in residual.get(u, {}):
+                  if v not in visited and residual[u][v] > 0:
+                      visited.add(v)
+                      parent[v] = u
+                      if v == t:
+                          return True
+                      queue.append(v)
+          return False
+
+      parent = {}
+      while bfs(source, sink, parent):
+          path_flow = float('inf')
+          s = sink
+          while s != source:
+              path_flow = min(path_flow, residual[parent[s]][s])
+              s = parent[s]
+          s = sink
+          while s != source:
+              u = parent[s]
+              residual[u][s] -= path_flow
+              residual.setdefault(s, {}).setdefault(u, 0)
+              residual[s][u] += path_flow
+              s = u
+          max_flow += path_flow
+
+      return max_flow`,
+    defaultInput: {
+      "graph": {
+        "S": { "A": 10, "C": 10 },
+        "A": { "B": 4, "C": 2, "D": 8 },
+        "B": { "T": 10 },
+        "C": { "D": 9 },
+        "D": { "B": 6, "T": 10 },
+        "T": {}
+      },
+      "source": "S",
+      "sink": "T"
+    }
   }
 ];
