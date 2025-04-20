@@ -7,21 +7,27 @@ const AssignmentList = ({ onSelectAssignment }) => {
     const completedCount = assignments.filter(a => a.completed).length;
     const totalCount = assignments.length;
 
-    // useEffect(() => {
-    //     axios.get('http://localhost:5000/assignments').then((res) => {
-    //         setAssignments(res.data);
-    //     });
-    // }, []);
-
-    useEffect(() => {
-        axios.get('http://localhost:5000/assignments', {
+    const fetchAssignments = async () => {
+        const res = await axios.get('http://localhost:5000/assignments', {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
-        }).then((res) => {
-            setAssignments(res.data);
         });
+        setAssignments(res.data);
+    };
+
+    useEffect(() => {
+        fetchAssignments();
     }, []);
+
+    const handleReset = async () => {
+        await axios.post('http://localhost:5000/reset-progress', {}, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        fetchAssignments();
+    };
 
     return (
         <Box>
@@ -30,6 +36,9 @@ const AssignmentList = ({ onSelectAssignment }) => {
                 Progress: {completedCount}/{totalCount} completed
             </Typography>
             <LinearProgress variant="determinate" sx={{ mb: 2 }} value={(completedCount / totalCount) * 100} />
+
+        
+            <Button variant="outlined" color="error" sx={{ mb: 2, mt: 2 }} onClick={handleReset}>Reset Progress</Button>
 
             {assignments.map((assignment) => (
                 <Paper key={assignment.id} sx={{ p: 2, mb: 2 }}>

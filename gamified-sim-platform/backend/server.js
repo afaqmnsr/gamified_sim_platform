@@ -163,6 +163,18 @@ app.post('/submit-assignment', authenticate, async (req, res) => {
     }
 });
 
+app.post('/reset-progress', authenticate, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        user.completedAssignments = [];
+        await user.save();
+        res.json({ message: 'Progress reset successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Failed to reset progress' });
+    }
+});
+
 // Get leaderboard for an assignment
 app.get('/assignment-leaderboard/:assignmentId', (req, res) => {
     const { assignmentId } = req.params;
