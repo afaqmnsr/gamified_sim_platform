@@ -252,13 +252,21 @@ function App() {
 
     try {
       setIsRunning(true);
-      const { user } = useAuth();
 
-      const response = await axios.post('http://localhost:5000/submit-assignment', {
-        assignmentId: selectedAssignment.id,
-        userCode: assignmentCode,
-        username: user?.name || 'Anonymous'
-      });
+      const response = await axios.post(
+        'http://localhost:5000/submit-assignment',
+        {
+          assignmentId: selectedAssignment.id,
+          userCode: assignmentCode,
+          username: user?.name || 'Anonymous'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          withCredentials: true
+        }
+      );
 
       showSnackbar(response.data.message, response.data.isCorrect ? 'success' : 'warning');
 
@@ -639,12 +647,14 @@ function App() {
                       userCustomCode={assignmentCode}
                       setUserCustomCode={setAssignmentCode}
                       selectedAlgorithm={selectedAssignment ? selectedAssignment.id : ''}
-                      inputArray={[]} // Optional input editing, depending on assignment policy
+                      inputArray={[]}
                       setInputArray={() => { }}
                       graphInput=""
                       setGraphInput={() => { }}
                       startNode=""
                       setStartNode={() => { }}
+                      language={language}
+                      setLanguage={setLanguage}
                     />
 
                     {/* Assignment Input Preview */}

@@ -33,7 +33,6 @@ const { assignments } = require('./helpers/assignments');
 
 let assignmentSubmissions = []; // In-memory storage for scores
 
-
 function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
@@ -70,13 +69,29 @@ app.post('/run-user-algorithm', async (req, res) => {
 });
 
 // Get all assignments
-app.get('/assignments', (req, res) => {
-    res.json(assignments);
+// app.get('/assignments', (req, res) => {
+//     res.json(assignments);
+// });
+app.get('/assignments', authenticate, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    const completed = user?.completedAssignments || [];
+
+    const visibleAssignments = assignments.map((a) => {
+        const isUnlocked = !a.unlocksAfter || a.unlocksAfter.every(dep => completed.includes(dep));
+        const isCompleted = completed.includes(a.id); // Check if the assignment is completed
+        return {
+            ...a,
+            unlocked: isUnlocked,
+            completed: isCompleted 
+        };
+    });
+
+    res.json(visibleAssignments);
 });
 
 // Submit assignment and auto-evaluate
 app.post('/submit-assignment', authenticate, async (req, res) => {
-    const { assignmentId, userCode, username = 'Anonymous' } = req.body;
+    const { assignmentId, userCode } = req.body;
     // const username = req.user.email;
 
     try {
@@ -114,9 +129,19 @@ app.post('/submit-assignment', authenticate, async (req, res) => {
 
         isCorrect = _.isEqual(actualResult, expected);
 
+        const userDoc = await User.findById(req.user.id);
+
+        if (isCorrect) {
+           
+            if (userDoc && !userDoc.completedAssignments.includes(assignmentId)) {
+                userDoc.completedAssignments.push(assignmentId);
+                await userDoc.save();
+            }
+        }
+
         const submission = {
             assignmentId,
-            username,
+            username: userDoc.username, // proper name from DB
             isCorrect,
             score: isCorrect ? result.score : 0,
             time: new Date().toISOString()

@@ -42,7 +42,8 @@ const assignments = [
                 valuesPositive: true
             }
         },
-        expectedResultType: 'dpResult'
+        expectedResultType: 'dpResult',
+        unlocksAfter: ['shortestPath'] // or multiple like ['shortestPath', 'topKFrequentElements']
     },
     {
         id: 'topKFrequentElements',
@@ -60,7 +61,8 @@ const assignments = [
             // Return an array of top K frequent elements
             return [];
         }`,
-        expectedResultType: 'customResult'
+        expectedResultType: 'customResult',
+        unlocksAfter: ['knapsackProblem'] // Unlocks after completing knapsackProblem assignment
     },
     {
         id: 'isGraphBipartite',
@@ -82,7 +84,8 @@ const assignments = [
             // Return true or false
             return false;
         }`,
-        expectedResultType: 'customResult'
+        expectedResultType: 'customResult',
+        unlocksAfter: ['topKFrequentElements'] // Unlocks after completing topKFrequentElements assignment
     },
     {
         id: 'coinChange',
@@ -100,7 +103,8 @@ const assignments = [
             // Return the minimum number of coins
             return -1;
         }`,
-        expectedResultType: 'dpResult'
+        expectedResultType: 'dpResult',
+        unlocksAfter: ['isGraphBipartite'] // Unlocks after completing isGraphBipartite assignment
     },
     {
         id: 'mergeIntervals',
@@ -117,7 +121,8 @@ const assignments = [
             // Return merged intervals
             return [];
         }`,
-        expectedResultType: 'customResult'
+        expectedResultType: 'customResult',
+        unlocksAfter: ['coinChange'] // Unlocks after completing coinChange assignment
     }
 
 ];

@@ -3,6 +3,11 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
+const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true); // 🆕
@@ -26,11 +31,6 @@ export const AuthProvider = ({ children }) => {
         );
         localStorage.setItem('token', data.token);
         setUser(data.user);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
     };
 
     const fetchUser = async () => {
