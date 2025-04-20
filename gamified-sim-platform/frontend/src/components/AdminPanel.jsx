@@ -1,20 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, TextField, Button, Paper, Grid, Table, TableHead,
-    TableRow, TableCell, TableBody, Select, MenuItem
+    TableRow, TableCell, TableBody, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
+import TablePagination from '@mui/material/TablePagination';
 import axios from 'axios';
 
 const AdminPanel = () => {
     const [assignments, setAssignments] = useState([]);
+    const [allAssignments, setAllAssignments] = useState([]); // ✅ preserve all
+    const [searchTerm, setSearchTerm] = useState('');
+    const [difficultyFilter, setDifficultyFilter] = useState('');
+
     const [submissions, setSubmissions] = useState([]);
     const [newAssignment, setNewAssignment] = useState({
         title: '', description: '', input: '{}', expectedOutput: '', type: 'custom', difficulty: 'Medium'
     });
 
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewAssignment, setPreviewAssignment] = useState(null);
+    const [editMode, setEditMode] = useState(false);
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10); // instead of 5
+
+    const [selectedAssignmentFilter, setSelectedAssignmentFilter] = useState('');
+
     useEffect(() => {
-        axios.get('http://localhost:5000/assignments').then(res => setAssignments(res.data));
+        axios.get('http://localhost:5000/assignments').then(res => {
+            setAssignments(res.data);
+            setAllAssignments(res.data); // ✅ Save all
+        });
     }, []);
+
+    useEffect(() => {
+        let filtered = allAssignments;
+
+        if (searchTerm) {
+            filtered = filtered.filter(a =>
+                a.title.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        if (difficultyFilter) {
+            filtered = filtered.filter(a => a.difficulty === difficultyFilter);
+        }
+
+        setAssignments(filtered);
+    }, [searchTerm, difficultyFilter, allAssignments]);
 
     const handleAddAssignment = async () => {
         try {
@@ -49,6 +82,30 @@ const AdminPanel = () => {
         }
     };
 
+    const handleUpdateAssignment = async () => {
+        try {
+            const parsedInput = JSON.parse(newAssignment.input);
+            const parsedExpected = JSON.parse(newAssignment.expectedOutput);
+
+            await axios.put(`http://localhost:5000/admin/update-assignment/${newAssignment.id}`, {
+                ...newAssignment,
+                input: parsedInput,
+                expectedOutput: parsedExpected
+            });
+
+            setAssignments(prev =>
+                prev.map(a => (a.id === newAssignment.id ? { ...newAssignment, input: parsedInput, expectedOutput: parsedExpected } : a))
+            );
+
+            setNewAssignment({ title: '', description: '', input: '{}', expectedOutput: '', type: 'custom', difficulty: 'Medium' });
+            setEditMode(false);
+            alert('✅ Assignment updated!');
+        } catch (err) {
+            console.error(err);
+            alert('❌ Update failed: Invalid JSON or server error.');
+        }
+    };
+
     const handleDeleteAssignment = async (id) => {
         try {
             await axios.delete(`http://localhost:5000/admin/delete-assignment/${id}`);
@@ -73,6 +130,10 @@ const AdminPanel = () => {
     };
 
     const difficultyOptions = ['Easy', 'Medium', 'Hard'];
+
+    const filteredSubmissions = selectedAssignmentFilter
+        ? submissions.filter(s => s.assignmentId === selectedAssignmentFilter)
+        : submissions;
 
     return (
         <Box>
@@ -160,7 +221,17 @@ const AdminPanel = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                        <Button variant="contained" onClick={handleAddAssignment}>Add Assignment</Button>
+                        {editMode ? (
+                            <>
+                                <Button variant="contained" color="primary" onClick={handleUpdateAssignment}>Save Changes</Button>
+                                <Button variant="text" color="secondary" sx={{ ml: 2 }} onClick={() => {
+                                    setNewAssignment({ title: '', description: '', input: '{}', expectedOutput: '', type: 'custom', difficulty: 'Medium' });
+                                    setEditMode(false);
+                                }}>Cancel</Button>
+                            </>
+                        ) : (
+                            <Button variant="contained" onClick={handleAddAssignment}>Add Assignment</Button>
+                        )}
                     </Grid>
                 </Grid>
             </Paper>
@@ -168,6 +239,32 @@ const AdminPanel = () => {
             {/* View All Assignments */}
             <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>Existing Assignments</Typography>
+                
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={6}>
+                        <TextField
+                            fullWidth
+                            label="Search by Title"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                        <Select
+                            fullWidth
+                            displayEmpty
+                            value={difficultyFilter}
+                            onChange={(e) => setDifficultyFilter(e.target.value)}
+                        >
+                            <MenuItem value="">Filter by Difficulty</MenuItem>
+                            {difficultyOptions.map(opt => (
+                                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                            ))}
+                        </Select>
+                    </Grid>
+                </Grid>
+
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -188,13 +285,14 @@ const AdminPanel = () => {
                                         variant="outlined"
                                         color="info"
                                         size="small"
-                                        onClick={() =>
+                                        onClick={() => {
+                                            setEditMode(true);
                                             setNewAssignment({
                                                 ...a,
                                                 input: JSON.stringify(a.input, null, 2),
                                                 expectedOutput: JSON.stringify(a.expectedOutput, null, 2)
-                                            })
-                                        }
+                                            });
+                                        }}
                                     >
                                         Edit
                                     </Button>
@@ -207,6 +305,17 @@ const AdminPanel = () => {
                                     >
                                         Delete
                                     </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{ ml: 1 }}
+                                        onClick={() => {
+                                            setPreviewAssignment(a);
+                                            setPreviewOpen(true);
+                                        }}
+                                    >
+                                        Preview
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -217,7 +326,52 @@ const AdminPanel = () => {
             {/* Submission Review Table (outside the assignments table) */}
             <Paper sx={{ p: 3, mt: 4 }}>
                 <Typography variant="h6">Submission Reviews</Typography>
+
                 <Button onClick={fetchSubmissions} variant="outlined" size="small" sx={{ mb: 2 }}>Refresh</Button>
+
+                <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{ mb: 2, ml: 1 }}
+                    onClick={() => {
+                        const csv = [
+                            ['Assignment', 'User', 'Score', 'Status', 'Time'],
+                            ...submissions.map(s => [
+                                s.assignmentId,
+                                s.username,
+                                s.score,
+                                s.isCorrect ? 'Correct' : 'Incorrect',
+                                new Date(s.time).toLocaleString()
+                            ])
+                        ]
+                            .map(row => row.join(','))
+                            .join('\n');
+
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'submissions.csv';
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    }}
+                >
+                    Download CSV
+                </Button>
+
+                <Select
+                    fullWidth
+                    displayEmpty
+                    value={selectedAssignmentFilter}
+                    onChange={(e) => setSelectedAssignmentFilter(e.target.value)}
+                    sx={{ mb: 2 }}
+                >
+                    <MenuItem value="">Filter by Assignment</MenuItem>
+                    {allAssignments.map((a) => (
+                        <MenuItem key={a.id} value={a.id}>{a.title}</MenuItem>
+                    ))}
+                </Select>
+
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -229,7 +383,7 @@ const AdminPanel = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {submissions.map((s, idx) => (
+                        {filteredSubmissions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((s, idx) => (
                             <TableRow key={idx}>
                                 <TableCell>{s.assignmentId}</TableCell>
                                 <TableCell>{s.username}</TableCell>
@@ -238,9 +392,50 @@ const AdminPanel = () => {
                                 <TableCell>{new Date(s.time).toLocaleString()}</TableCell>
                             </TableRow>
                         ))}
+
+                        {filteredSubmissions.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={5} align="center">No submissions found.</TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
+
+                <TablePagination
+                    component="div"
+                    count={filteredSubmissions.length}
+                    page={page}
+                    onPageChange={(e, newPage) => setPage(newPage)}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[5, 10, 25, 50, 100]} // 👈 add this
+                />
+
             </Paper>
+
+            <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle>{previewAssignment?.title}</DialogTitle>
+                <DialogContent dividers>
+                    <Typography variant="subtitle1" gutterBottom>Description</Typography>
+                    <Typography>{previewAssignment?.description}</Typography>
+
+                    <Typography variant="subtitle1" sx={{ mt: 2 }}>Input</Typography>
+                    <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
+                        <pre>{JSON.stringify(previewAssignment?.input, null, 2)}</pre>
+                    </Paper>
+
+                    <Typography variant="subtitle1" sx={{ mt: 2 }}>Expected Output</Typography>
+                    <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
+                        <pre>{JSON.stringify(previewAssignment?.expectedOutput, null, 2)}</pre>
+                    </Paper>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

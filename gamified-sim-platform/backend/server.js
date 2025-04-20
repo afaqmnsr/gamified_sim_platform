@@ -202,6 +202,25 @@ app.post('/admin/add-assignment', (req, res) => {
     res.json({ message: 'Assignment added!', assignment: newAssignment });
 });
 
+app.put('/admin/update-assignment/:id', (req, res) => {
+    const { id } = req.params;
+    const index = assignments.findIndex(a => a.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Assignment not found' });
+    }
+
+    const updatedAssignment = {
+        ...assignments[index],
+        ...req.body,
+        id // preserve original ID
+    };
+
+    assignments[index] = updatedAssignment;
+
+    res.json({ message: 'Assignment updated!', assignment: updatedAssignment });
+});
+
 app.get('/admin/submissions', (req, res) => {
     res.json(assignmentSubmissions);
 });
