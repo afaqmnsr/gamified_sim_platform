@@ -27,6 +27,9 @@ const AdminPanel = () => {
     const [selectedAssignmentFilter, setSelectedAssignmentFilter] = useState('');
     const [users, setUsers] = useState([]);
 
+    const [deleteUserDialog, setDeleteUserDialog] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+
     useEffect(() => {
         axios.get('http://localhost:5000/admin/users', {
             headers: {
@@ -128,6 +131,25 @@ const AdminPanel = () => {
 
     const fetchSubmissions = () => {
         axios.get('http://localhost:5000/admin/submissions').then(res => setSubmissions(res.data));
+    };
+
+    const handleRoleChange = async (userId, newRole) => {
+        try {
+            await axios.put(`http://localhost:5000/admin/users/${userId}`, {
+                role: newRole
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            setUsers((prev) =>
+                prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
+            );
+        } catch (err) {
+            console.error('Role update failed:', err);
+            alert('Failed to update role');
+        }
     };
 
     const isValidJson = (str) => {
@@ -427,6 +449,7 @@ const AdminPanel = () => {
             </Paper>
 
             <Typography variant="h6" sx={{ mt: 6, mb: 2 }}>User List</Typography>
+            <Typography variant="h6" sx={{ mt: 6, mb: 2 }}>User List</Typography>
             <Table>
                 <TableHead>
                     <TableRow>
@@ -434,15 +457,38 @@ const AdminPanel = () => {
                         <TableCell>Email</TableCell>
                         <TableCell>Role</TableCell>
                         <TableCell>Registered</TableCell>
+                        <TableCell>Actions</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {users.map((u, idx) => (
-                        <TableRow key={idx}>
+                    {users.map((u) => (
+                        <TableRow key={u._id}>
                             <TableCell>{u.name || u.username}</TableCell>
                             <TableCell>{u.email}</TableCell>
-                            <TableCell>{u.role}</TableCell>
+                            <TableCell>
+                                <Select
+                                    size="small"
+                                    value={u.role}
+                                    onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                >
+                                    <MenuItem value="student">student</MenuItem>
+                                    <MenuItem value="admin">admin</MenuItem>
+                                </Select>
+                            </TableCell>
                             <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    size="small"
+                                    onClick={() => {
+                                        setUserToDelete(u);
+                                        setDeleteUserDialog(true);
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -468,6 +514,36 @@ const AdminPanel = () => {
                     <Button onClick={() => setPreviewOpen(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
+
+            <Dialog open={deleteUserDialog} onClose={() => setDeleteUserDialog(false)}>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                    Are you sure you want to delete user{' '}
+                    <strong>{userToDelete?.email}</strong>?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteUserDialog(false)}>Cancel</Button>
+                    <Button
+                        color="error"
+                        onClick={async () => {
+                            try {
+                                await axios.delete(`http://localhost:5000/admin/users/${userToDelete._id}`, {
+                                    headers: {
+                                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                                    }
+                                });
+                                setUsers((prev) => prev.filter((u) => u._id !== userToDelete._id));
+                                setDeleteUserDialog(false);
+                            } catch (err) {
+                                alert('Failed to delete user');
+                            }
+                        }}
+                    >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
         </Box>
     );
 };

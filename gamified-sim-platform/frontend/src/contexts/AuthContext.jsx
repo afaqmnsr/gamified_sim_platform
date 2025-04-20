@@ -5,6 +5,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true); // 🆕
 
     const login = async (email, password) => {
         const { data } = await axios.post(
@@ -34,17 +35,21 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) {
+            setLoading(false); // 🆕 still finish loading even if no token
+            return;
+        }
 
         try {
             const { data } = await axios.get('http://localhost:5000/api/auth/me', {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true
             });
-
             setUser(data);
         } catch (err) {
             logout();
+        } finally {
+            setLoading(false); // 🆕 mark as done
         }
     };
 
@@ -53,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, register }}>
+        <AuthContext.Provider value={{ user, login, logout, register, loading }}>
             {children}
         </AuthContext.Provider>
     );
@@ -61,11 +66,16 @@ export const AuthProvider = ({ children }) => {
 
 export const refreshAccessToken = async () => {
     try {
-        const { data } = await axios.post('http://localhost:5000/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await axios.post(
+            'http://localhost:5000/api/auth/refresh',
+            {},
+            { withCredentials: true }
+        );
         localStorage.setItem('token', data.token);
+        await fetchUser(); // 🆕 so user stays up-to-date
         return data.token;
     } catch (err) {
-        logout();
+        logout(); // gracefully logout
         throw err;
     }
 };

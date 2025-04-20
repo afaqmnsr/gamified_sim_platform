@@ -273,4 +273,33 @@ app.get('/admin/users', authenticate, async (req, res) => {
     res.json(users);
 });
 
+app.delete('/admin/users/:id', authenticate, async (req, res) => {
+    const admin = await User.findById(req.user.id);
+    if (admin.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
+app.put('/admin/users/:id', authenticate, async (req, res) => {
+    const admin = await User.findById(req.user.id);
+    if (admin.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { role: req.body.role },
+            { new: true }
+        );
+
+        res.json({ message: 'Role updated', user });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update role' });
+    }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

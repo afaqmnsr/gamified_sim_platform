@@ -45,8 +45,7 @@ import { Navigate } from 'react-router-dom';
 
 
 function App() {
-  const { user, logout } = useAuth();
-  if (!user) return <Navigate to="/login" />;
+  const { user, logout, loading } = useAuth();
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
   const [userCustomCode, setUserCustomCode] = useState('');
@@ -77,6 +76,9 @@ function App() {
 
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
 
   const handleAlgorithmSelect = (algoId) => {
     const algo = algorithms.find((a) => a.id === algoId);
@@ -356,6 +358,16 @@ function App() {
     return null;
   };
 
+  const ProtectedRoute = ({ children, role }) => {
+    const { user } = useAuth();
+
+    if (!user) return <Navigate to="/login" />;
+
+    if (role && user.role !== role) return <Navigate to="/" />;
+
+    return children;
+  };
+
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary', position: 'relative' }}>
       
@@ -414,7 +426,7 @@ function App() {
         >
           <Tab label={selectedAlgorithm === 'petriNetSim' ? "Petri Net Simulator" : "Algorithm Simulator"} />
           <Tab label="Assignments" />
-          <Tab label="Admin" />
+          {user?.role === 'admin' && <Tab label="Admin" />}
         </Tabs>
 
         {/* ALGORITHM SIMULATOR TAB */}
