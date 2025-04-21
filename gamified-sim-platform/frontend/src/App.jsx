@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { algorithms } from './constants/predefinedAlgorithms';
 import AlgorithmSelector from './components/AlgorithmSelector';
@@ -17,6 +17,7 @@ import AlgorithmVisualizer from './components/AlgorithmVisualizer';
 import DPMatrixVisualizer from './components/DPMatrixVisualizer';
 import AdminPanel from './components/AdminPanel';
 import FlowNetworkVisualizer from './components/FlowNetworkVisualizer';
+import ChangeLogViewer from './components/ChangeLogViewer';
 import { ReactFlowProvider } from 'reactflow';
 
 import {
@@ -71,6 +72,7 @@ function App() {
   const [proofData, setProofData] = useState(null);
   const [language, setLanguage] = useState('js'); // 'js' or 'python'
   const [currentStep, setCurrentStep] = useState(0);
+  const [startTime, setStartTime] = useState(null);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
@@ -232,6 +234,13 @@ function App() {
         await runSymbolicExecution(userCustomCode);
       }
 
+      await logAssignmentInteraction(selectedAssignment?.id, 'run_algorithm', {
+        hasError: !!resultData.error,
+        resultData: resultData,
+        timeSpentMs: Date.now() - startTime,
+        codeLength: userCustomCode.length,
+      });
+
       // Update scores after validations
       setScores((prevScores) => [...prevScores, { name: 'Player', score: response.data.score }]);
       showSnackbar('Algorithm ran successfully!', 'success');
@@ -268,6 +277,13 @@ function App() {
           withCredentials: true
         }
       );
+
+      const timeSpent = Date.now() - startTime;
+      await logAssignmentInteraction(selectedAssignment.id, 'submit', {
+        codeLength: assignmentCode.length,
+        timeSpentMs: timeSpent,
+        result: response.data.result,
+      });
 
       showSnackbar(response.data.message, response.data.isCorrect ? 'success' : 'warning');
 
@@ -396,6 +412,22 @@ function App() {
     if (role && user.role !== role) return <Navigate to="/" />;
 
     return children;
+  };
+
+  const logAssignmentInteraction = async (assignmentId, action, metadata = {}) => {
+    try {
+      await axios.post('http://localhost:5000/log-interaction', {
+        assignmentId,
+        action,
+        metadata
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    } catch (err) {
+      console.warn('Log failed:', err.message);
+    }
   };
 
   return (
@@ -622,6 +654,9 @@ function App() {
               <Paper elevation={3} sx={{ p: 3 }}>
                 <AssignmentList
                   onSelectAssignment={(assignment) => {
+                    const now = Date.now();
+                    setStartTime(now); // ✅ Set start time on selection
+                    logAssignmentInteraction(assignment.id, 'start', { startTime: now });
                     setSelectedAssignment(assignment);
                     setAssignmentCode(assignment.code || '');
                   }}
@@ -665,6 +700,7 @@ function App() {
                       setStartNode={() => { }}
                       language={language}
                       setLanguage={setLanguage}
+                      selectedAssignment={selectedAssignment}
                     />
 
                     {/* Assignment Input Preview */}
@@ -739,6 +775,12 @@ function App() {
                       reloadTrigger={reloadLeaderboard}
                     />
                   </Paper>
+
+                  {selectedAssignment && (
+                    <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+                      <ChangeLogViewer />
+                    </Paper>
+                  )}
                 </>
               ) : (
                 <Paper elevation={3} sx={{ p: 3 }}>
@@ -748,6 +790,7 @@ function App() {
                 </Paper>
               )}
             </Grid>
+
           </Grid>
         )}
 

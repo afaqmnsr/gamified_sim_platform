@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import TablePagination from '@mui/material/TablePagination';
 import axios from 'axios';
+import ChangeLogViewer from './ChangeLogViewer';
 
 const AdminPanel = () => {
     const [assignments, setAssignments] = useState([]);
@@ -29,6 +30,9 @@ const AdminPanel = () => {
 
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+
+    const [logViewerOpen, setLogViewerOpen] = useState(false);
+    const [selectedUserForLogs, setSelectedUserForLogs] = useState(null);
 
     useEffect(() => {
         axios.get('http://localhost:5000/admin/users', {
@@ -540,12 +544,28 @@ const AdminPanel = () => {
                                     >
                                         Delete
                                     </Button>
+
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{ ml: 1 }}
+                                        onClick={() => {
+                                            setSelectedUserForLogs(u);
+                                            setLogViewerOpen(true);
+                                        }}
+                                    >
+                                        View Logs
+                                    </Button>
+
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </Paper>
+
+            {/* Uncomment this to show the changelog viewer for admins */}
+            {/* <ChangeLogViewer isAdmin={true} /> */}
 
             <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{previewAssignment?.title}</DialogTitle>
@@ -594,6 +614,16 @@ const AdminPanel = () => {
                     >
                         Delete
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={logViewerOpen} onClose={() => setLogViewerOpen(false)} fullWidth maxWidth="md">
+                <DialogTitle>Interaction Logs for {selectedUserForLogs?.name || selectedUserForLogs?.username}</DialogTitle>
+                <DialogContent dividers>
+                    <ChangeLogViewer isAdmin={false} userId={selectedUserForLogs?._id} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setLogViewerOpen(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
 

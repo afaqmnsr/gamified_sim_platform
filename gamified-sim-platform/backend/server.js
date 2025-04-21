@@ -30,6 +30,7 @@ const JWT_SECRET = 'super_secret_key_change_me';
 
 const { runUserCode } = require('./helpers/userAlgorithmRunner');
 const { assignments } = require('./helpers/assignments');
+const AssignmentInteractionLog = require('./models/AssignmentInteractionLog');
 
 let assignmentSubmissions = []; // In-memory storage for scores
 
@@ -138,6 +139,24 @@ app.post('/submit-assignment', authenticate, async (req, res) => {
                 await userDoc.save();
             }
         }
+
+        // Update retry count
+        const retryKey = `${req.user.id}-${assignmentId}`;
+        if (!global.retryTracker) global.retryTracker = {};
+        if (!global.retryTracker[retryKey]) global.retryTracker[retryKey] = 0;
+        global.retryTracker[retryKey] += 1;
+
+        await AssignmentInteractionLog.create({
+            userId: req.user.id,
+            assignmentId,
+            action: 'submit',
+            metadata: {
+                retryCount: global.retryTracker[retryKey],
+                isCorrect,
+                score: result.score,
+                timeTaken: Date.now() - req.body.startTime
+            }
+        });
 
         const submission = {
             assignmentId,
@@ -338,5 +357,49 @@ app.put('/admin/users/:id', authenticate, async (req, res) => {
         res.status(500).json({ error: 'Failed to update role' });
     }
 });
+
+app.post('/log-interaction', authenticate, async (req, res) => {
+    try {
+        const { assignmentId = "", action, metadata, hasError = false, resultData = {} } = req.body;
+
+        await AssignmentInteractionLog.create({
+            userId: req.user.id,
+            assignmentId,
+            action,
+            metadata,
+            timestamp: new Date(),
+            hasError,
+            resultData
+        });
+
+        res.json({ message: 'Logged successfully' });
+    } catch (err) {
+        console.error('Log error:', err);
+        res.status(500).json({ error: 'Failed to log interaction' });
+    }
+});
+
+app.get('/interaction-logs/:userId?', authenticate, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const requester = await User.findById(req.user.id);
+
+        if (userId && requester.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: Only admins can view other users\' logs.' });
+        }
+
+        const targetUserId = userId || req.user.id;
+
+        const logs = await AssignmentInteractionLog.find({ userId: targetUserId })
+            .sort({ timestamp: -1 })
+            .lean();
+
+        res.json(logs);
+    } catch (err) {
+        console.error('Fetch logs error:', err);
+        res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

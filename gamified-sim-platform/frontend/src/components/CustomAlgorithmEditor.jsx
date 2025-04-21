@@ -1,4 +1,5 @@
 import { algorithms } from '../constants/predefinedAlgorithms'
+import { useEffect } from 'react';
 import {
     Box,
     Button,
@@ -10,6 +11,7 @@ import {
     Select,
     MenuItem
 } from '@mui/material';
+import axios from 'axios';
 
 import AceEditor from 'react-ace';
 import ace from 'ace-builds';
@@ -52,7 +54,8 @@ const CustomAlgorithmEditor = ({
     isRunning,
     handleRunAlgorithm,
     language,
-    setLanguage
+    setLanguage,
+    selectedAssignment,
 }) => {
 
     const handleJsonInputChange = (e) => {
@@ -71,6 +74,51 @@ const CustomAlgorithmEditor = ({
             setUserCustomCode(newLang === 'python' ? algo.pythonCode : algo.code);
         }
     };
+
+    const logAssignmentInteraction = async (assignmentId, action, metadata = {}) => {
+        try {
+            await axios.post('http://localhost:5000/log-interaction', {
+                assignmentId,
+                action,
+                metadata
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+        } catch (err) {
+            console.warn('Log failed:', err.message);
+        }
+    };
+
+    useEffect(() => {
+        const debounceLog = setTimeout(() => {
+            if (userCustomCode && selectedAssignment) {
+                logAssignmentInteraction(selectedAssignment.id, 'code_change', {
+                    length: userCustomCode.length,
+                    language,
+                    algorithm: selectedAlgorithm,
+                });
+            }
+        }, 1500);
+
+        return () => clearTimeout(debounceLog);
+    }, [userCustomCode]);
+
+    useEffect(() => {
+        const metrics = {
+            length: userCustomCode.length,
+            lineCount: userCustomCode.split('\n').length,
+            containsConsole: userCustomCode.includes('console.log'),
+            containsLoops: /for|while/.test(userCustomCode)
+        };
+
+        const debounce = setTimeout(() => {
+            logAssignmentInteraction(selectedAssignment?.id, 'code_metrics', metrics);
+        }, 3000);
+
+        return () => clearTimeout(debounce);
+    }, [userCustomCode]);
 
     return (
         <Box>
