@@ -82,6 +82,7 @@ const AdminPanel = () => {
                 ...newAssignment,
                 input: parsedInput,
                 expectedOutput: parsedExpected,
+                unlocksAfter: newAssignment.unlocksAfter || []
             });
 
             // Optimistically update frontend state
@@ -200,7 +201,7 @@ const AdminPanel = () => {
 
             {/* Add Assignment Form */}
             <Paper sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6">Add New Assignment</Typography>
+                <Typography variant="h6" sx={{ mb: 1 }}>Add New Assignment</Typography>
                 <Grid container spacing={2}>
                     {['title', 'description'].map((field) => (
                         <Grid item xs={12} md={6} key={field}>
@@ -239,6 +240,23 @@ const AdminPanel = () => {
                             ))}
                         </Select>
                     </Grid>
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1">Unlocks After (Dependencies)</Typography>
+                        <Select
+                            fullWidth
+                            multiple
+                            value={newAssignment.unlocksAfter || []}
+                            onChange={(e) => setNewAssignment({ ...newAssignment, unlocksAfter: e.target.value })}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                            {allAssignments.map((a) => (
+                                <MenuItem key={a.id} value={a.id}>
+                                    {a.title}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </Grid>
+
                     <Grid item xs={12}>
                         <TextField
                             label="Input (JSON)"
@@ -297,7 +315,7 @@ const AdminPanel = () => {
 
             {/* View All Assignments */}
             <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>Existing Assignments</Typography>
+                <Typography variant="h6" sx={{ mb: 1 }} gutterBottom>Existing Assignments</Typography>
                 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6}>
@@ -330,6 +348,7 @@ const AdminPanel = () => {
                             <TableCell>Title</TableCell>
                             <TableCell>Type</TableCell>
                             <TableCell>Difficulty</TableCell>
+                            <TableCell>Dependencies</TableCell>
                             <TableCell>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -339,6 +358,11 @@ const AdminPanel = () => {
                                 <TableCell>{a.title}</TableCell>
                                 <TableCell>{a.type}</TableCell>
                                 <TableCell>{a.difficulty}</TableCell>
+                                <TableCell>
+                                    {(a.unlocksAfter || []).length > 0
+                                        ? a.unlocksAfter.join(', ')
+                                        : '—'}
+                                </TableCell>
                                 <TableCell>
                                     <Button
                                         variant="outlined"
@@ -384,7 +408,7 @@ const AdminPanel = () => {
 
             {/* Submission Review Table (outside the assignments table) */}
             <Paper sx={{ p: 3, mt: 4 }}>
-                <Typography variant="h6">Submission Reviews</Typography>
+                <Typography variant="h6" sx={{ mb: 1 }}>Submission Reviews</Typography>
 
                 <Button onClick={fetchSubmissions} variant="outlined" size="small" sx={{ mb: 2 }}>Refresh</Button>
 
@@ -475,51 +499,53 @@ const AdminPanel = () => {
 
             </Paper>
 
-            <Typography variant="h6" sx={{ mt: 6, mb: 2 }}>User List</Typography>
-            <Typography variant="h6" sx={{ mt: 6, mb: 2 }}>User List</Typography>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Email</TableCell>
-                        <TableCell>Role</TableCell>
-                        <TableCell>Registered</TableCell>
-                        <TableCell>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {users.map((u) => (
-                        <TableRow key={u._id}>
-                            <TableCell>{u.name || u.username}</TableCell>
-                            <TableCell>{u.email}</TableCell>
-                            <TableCell>
-                                <Select
-                                    size="small"
-                                    value={u.role}
-                                    onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                                >
-                                    <MenuItem value="student">student</MenuItem>
-                                    <MenuItem value="admin">admin</MenuItem>
-                                </Select>
-                            </TableCell>
-                            <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    size="small"
-                                    onClick={() => {
-                                        setUserToDelete(u);
-                                        setDeleteUserDialog(true);
-                                    }}
-                                >
-                                    Delete
-                                </Button>
-                            </TableCell>
+            <Paper sx={{ p: 3, mt: 4 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>User List</Typography>
+                
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Role</TableCell>
+                            <TableCell>Registered</TableCell>
+                            <TableCell>Actions</TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                    <TableBody>
+                        {users.map((u) => (
+                            <TableRow key={u._id}>
+                                <TableCell>{u.name || u.username}</TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell>
+                                    <Select
+                                        size="small"
+                                        value={u.role}
+                                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                    >
+                                        <MenuItem value="student">student</MenuItem>
+                                        <MenuItem value="admin">admin</MenuItem>
+                                    </Select>
+                                </TableCell>
+                                <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        size="small"
+                                        onClick={() => {
+                                            setUserToDelete(u);
+                                            setDeleteUserDialog(true);
+                                        }}
+                                    >
+                                        Delete
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Paper>
 
             <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{previewAssignment?.title}</DialogTitle>
