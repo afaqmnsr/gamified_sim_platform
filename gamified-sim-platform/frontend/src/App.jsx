@@ -776,11 +776,11 @@ function App() {
                     />
                   </Paper>
 
-                  {selectedAssignment && (
+                  {/* {selectedAssignment && (
                     <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                       <ChangeLogViewer />
                     </Paper>
-                  )}
+                  )} */}
                 </>
               ) : (
                 <Paper elevation={3} sx={{ p: 3 }}>

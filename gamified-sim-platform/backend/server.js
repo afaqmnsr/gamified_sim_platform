@@ -32,7 +32,7 @@ const { runUserCode } = require('./helpers/userAlgorithmRunner');
 const { assignments } = require('./helpers/assignments');
 const AssignmentInteractionLog = require('./models/AssignmentInteractionLog');
 
-let assignmentSubmissions = []; // In-memory storage for scores
+let assignmentSubmissions = [];
 
 function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -158,15 +158,28 @@ app.post('/submit-assignment', authenticate, async (req, res) => {
             }
         });
 
-        const submission = {
+        let submission = {
             assignmentId,
-            username: userDoc.username, // proper name from DB
+            userId: req.user.id,
+            submittedAt: new Date(),
             isCorrect,
             score: isCorrect ? result.score : 0,
-            time: new Date().toISOString()
+            userCode,
+            result
         };
 
-        assignmentSubmissions.push(submission);
+        if (userDoc) {
+
+            // Save submission history
+            if (!userDoc.submissionHistory) {
+                userDoc.submissionHistory = [];
+            }
+
+            userDoc.submissionHistory.push(submission);
+
+            // Save even if incorrect to keep full history
+            await userDoc.save();
+        }
 
         res.json({
             ...submission,
@@ -197,6 +210,7 @@ app.post('/reset-progress', authenticate, async (req, res) => {
 // Get leaderboard for an assignment
 app.get('/assignment-leaderboard/:assignmentId', (req, res) => {
     const { assignmentId } = req.params;
+    
     const leaderboard = assignmentSubmissions
         .filter(s => s.assignmentId === assignmentId && s.isCorrect)
         .sort((a, b) => b.score - a.score);
@@ -317,8 +331,22 @@ app.put('/admin/update-assignment/:id', authenticate, (req, res) => {
     res.json({ message: 'Assignment updated!', assignment: updatedAssignment });
 });
 
-app.get('/admin/submissions', (req, res) => {
-    res.json(assignmentSubmissions);
+// Get a specific user's submission history (admin-only or self)
+app.get('/admin/user-submissions/:userId', authenticate, async (req, res) => {
+    const requester = await User.findById(req.user.id);
+    const targetId = req.params.userId;
+
+    if (requester.role !== 'admin' && requester._id.toString() !== targetId) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+
+    try {
+        const user = await User.findById(targetId).select('username email submissionHistory');
+        res.json(user.submissionHistory || []);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch submissions' });
+    }
 });
 
 app.get('/admin/users', authenticate, async (req, res) => {

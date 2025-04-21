@@ -34,6 +34,10 @@ const AdminPanel = () => {
     const [logViewerOpen, setLogViewerOpen] = useState(false);
     const [selectedUserForLogs, setSelectedUserForLogs] = useState(null);
 
+    const [selectedUserSubmissions, setSelectedUserSubmissions] = useState([]);
+    const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
+    const [selectedSubmissionUser, setSelectedSubmissionUser] = useState(null);
+
     useEffect(() => {
         axios.get('http://localhost:5000/admin/users', {
             headers: {
@@ -411,7 +415,7 @@ const AdminPanel = () => {
             </Paper>
 
             {/* Submission Review Table (outside the assignments table) */}
-            <Paper sx={{ p: 3, mt: 4 }}>
+            {/* <Paper sx={{ p: 3, mt: 4 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>Submission Reviews</Typography>
 
                 <Button onClick={fetchSubmissions} variant="outlined" size="small" sx={{ mb: 2 }}>Refresh</Button>
@@ -501,7 +505,7 @@ const AdminPanel = () => {
                     rowsPerPageOptions={[5, 10, 25, 50, 100]} // 👈 add this
                 />
 
-            </Paper>
+            </Paper> */}
 
             <Paper sx={{ p: 3, mt: 4 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>User List</Typography>
@@ -555,6 +559,29 @@ const AdminPanel = () => {
                                         }}
                                     >
                                         View Logs
+                                    </Button>
+
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{ ml: 1 }}
+                                        onClick={async () => {
+                                            try {
+                                                const res = await axios.get(`http://localhost:5000/admin/user-submissions/${u._id}`, {
+                                                    headers: {
+                                                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                                                    }
+                                                });
+                                                setSelectedUserSubmissions(res.data);
+                                                setSelectedSubmissionUser(u);
+                                                setSubmissionDialogOpen(true);
+                                            } catch (err) {
+                                                console.error('Error fetching submissions:', err);
+                                                alert('Failed to fetch submissions');
+                                            }
+                                        }}
+                                    >
+                                        View Submissions
                                     </Button>
 
                                 </TableCell>
@@ -624,6 +651,39 @@ const AdminPanel = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setLogViewerOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={submissionDialogOpen} onClose={() => setSubmissionDialogOpen(false)} fullWidth maxWidth="md">
+                <DialogTitle>Submissions for {selectedSubmissionUser?.username}</DialogTitle>
+                <DialogContent dividers>
+                    {selectedUserSubmissions.length === 0 ? (
+                        <Typography>No submissions found.</Typography>
+                    ) : (
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Assignment</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell>Score</TableCell>
+                                    <TableCell>Time</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {selectedUserSubmissions.map((sub, idx) => (
+                                    <TableRow key={idx}>
+                                        <TableCell>{sub.assignmentId}</TableCell>
+                                        <TableCell>{sub.isCorrect ? '✅' : '❌'}</TableCell>
+                                        <TableCell>{sub.score}</TableCell>
+                                        <TableCell>{new Date(sub.submittedAt).toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setSubmissionDialogOpen(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
 

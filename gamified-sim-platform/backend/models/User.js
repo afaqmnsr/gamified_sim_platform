@@ -9,7 +9,18 @@ const userSchema = new mongoose.Schema({
     completedAssignments: {
         type: [String], // Array of assignment IDs
         default: []
-    }
+    },
+    submissionHistory: [
+        {
+            assignmentId: String,
+            userId: String,
+            submittedAt: Date,
+            isCorrect: Boolean,
+            score: Number,
+            userCode: String,
+            result: mongoose.Schema.Types.Mixed, // ✅ allows any type (string, object, array, etc.),
+        }
+    ]
 }, { timestamps: true });
 
 // Hash password before saving
