@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, TextField, Button, Paper, Grid, Table, TableHead,
-    TableRow, TableCell, TableBody, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions
+    TableRow, TableCell, TableBody, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
+    Tabs, Tab, IconButton, TablePagination
 } from '@mui/material';
-import TablePagination from '@mui/material/TablePagination';
 import axios from 'axios';
 import ChangeLogViewer from './ChangeLogViewer';
+import CoursesTab from './CoursesTab';
 
 const AdminPanel = () => {
     const [assignments, setAssignments] = useState([]);
@@ -37,6 +38,8 @@ const AdminPanel = () => {
     const [selectedUserSubmissions, setSelectedUserSubmissions] = useState([]);
     const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
     const [selectedSubmissionUser, setSelectedSubmissionUser] = useState(null);
+
+    const [tabValue, setTabValue] = useState(0); // 0: Assignments, 1: Courses, 2: Users
 
     useEffect(() => {
         axios.get('http://localhost:5000/admin/users', {
@@ -207,215 +210,227 @@ const AdminPanel = () => {
         <Box>
             <Typography variant="h4" gutterBottom>Admin Dashboard</Typography>
 
-            {/* Add Assignment Form */}
-            <Paper sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>Add New Assignment</Typography>
-                <Grid container spacing={2}>
-                    {['title', 'description'].map((field) => (
-                        <Grid item xs={12} md={6} key={field}>
-                            <TextField
-                                label={field}
-                                value={newAssignment[field]}
-                                onChange={(e) => setNewAssignment({ ...newAssignment, [field]: e.target.value })}
-                                fullWidth
-                            />
+            <Tabs value={tabValue} onChange={(e, newVal) => setTabValue(newVal)}>
+                <Tab label="Courses" />
+                <Tab label="Assignments" />
+                <Tab label="Users" />
+            </Tabs>
+
+            {tabValue === 0 && (
+                <CoursesTab />
+            )}
+
+            {tabValue === 1 && (
+                <>
+                    {/* Add Assignment Form */}
+                    <Paper sx={{ p: 3, mb: 4 }}>
+                        <Typography variant="h6" sx={{ mb: 1 }}>Add New Assignment</Typography>
+                        <Grid container spacing={2}>
+                            {['title', 'description'].map((field) => (
+                                <Grid item xs={12} md={6} key={field}>
+                                    <TextField
+                                        label={field}
+                                        value={newAssignment[field]}
+                                        onChange={(e) => setNewAssignment({ ...newAssignment, [field]: e.target.value })}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            ))}
+                            <Grid item xs={12} md={6}>
+                                <Select
+                                    label="Type"
+                                    value={newAssignment.type}
+                                    onChange={(e) => setNewAssignment({ ...newAssignment, type: e.target.value })}
+                                    fullWidth
+                                >
+                                    <MenuItem value="custom">Custom</MenuItem>
+                                    <MenuItem value="dp">DP</MenuItem>
+                                    <MenuItem value="graph">Graph</MenuItem>
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Select
+                                    fullWidth
+                                    value={newAssignment.difficulty || ''}
+                                    onChange={(e) =>
+                                        setNewAssignment({ ...newAssignment, difficulty: e.target.value })
+                                    }
+                                >
+                                    {difficultyOptions.map((option) => (
+                                        <MenuItem key={option} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1">Unlocks After (Dependencies)</Typography>
+                                <Select
+                                    fullWidth
+                                    multiple
+                                    value={newAssignment.unlocksAfter || []}
+                                    onChange={(e) => setNewAssignment({ ...newAssignment, unlocksAfter: e.target.value })}
+                                    renderValue={(selected) => selected.join(', ')}
+                                >
+                                    {allAssignments.map((a) => (
+                                        <MenuItem key={a.id} value={a.id}>
+                                            {a.title}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Input (JSON)"
+                                    multiline
+                                    fullWidth
+                                    value={newAssignment.input}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setNewAssignment((prev) => ({ ...prev, input: value }));
+                                    }}
+                                    error={!!newAssignment.input && !isValidJson(newAssignment.input)}
+                                    helperText={!isValidJson(newAssignment.input) ? 'Invalid JSON!' : ''}
+                                    sx={{ mt: 2 }}
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1">Input Preview</Typography>
+                                <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
+                                    <pre>{isValidJson(newAssignment.input) ? JSON.stringify(JSON.parse(newAssignment.input), null, 2) : 'Invalid JSON'}</pre>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Expected Output (JSON)"
+                                    multiline
+                                    fullWidth
+                                    value={newAssignment.expectedOutput}
+                                    onChange={(e) => setNewAssignment({ ...newAssignment, expectedOutput: e.target.value })}
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1">Expected Output Preview</Typography>
+                                <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
+                                    <pre>{isValidJson(newAssignment.expectedOutput) ? JSON.stringify(JSON.parse(newAssignment.expectedOutput), null, 2) : 'Invalid JSON'}</pre>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                {editMode ? (
+                                    <>
+                                        <Button variant="contained" color="primary" onClick={handleUpdateAssignment}>Save Changes</Button>
+                                        <Button variant="text" color="secondary" sx={{ ml: 2 }} onClick={() => {
+                                            setNewAssignment({ title: '', description: '', input: '{}', expectedOutput: '', type: 'custom', difficulty: 'Medium' });
+                                            setEditMode(false);
+                                        }}>Cancel</Button>
+                                    </>
+                                ) : (
+                                    <Button variant="contained" onClick={handleAddAssignment}>Add Assignment</Button>
+                                )}
+                            </Grid>
                         </Grid>
-                    ))}
-                    <Grid item xs={12} md={6}>
-                        <Select
-                            label="Type"
-                            value={newAssignment.type}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, type: e.target.value })}
-                            fullWidth
-                        >
-                            <MenuItem value="custom">Custom</MenuItem>
-                            <MenuItem value="dp">DP</MenuItem>
-                            <MenuItem value="graph">Graph</MenuItem>
-                        </Select>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <Select
-                            fullWidth
-                            value={newAssignment.difficulty || ''}
-                            onChange={(e) =>
-                                setNewAssignment({ ...newAssignment, difficulty: e.target.value })
-                            }
-                        >
-                            {difficultyOptions.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                    {option}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Typography variant="subtitle1">Unlocks After (Dependencies)</Typography>
-                        <Select
-                            fullWidth
-                            multiple
-                            value={newAssignment.unlocksAfter || []}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, unlocksAfter: e.target.value })}
-                            renderValue={(selected) => selected.join(', ')}
-                        >
-                            {allAssignments.map((a) => (
-                                <MenuItem key={a.id} value={a.id}>
-                                    {a.title}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </Grid>
+                    </Paper>
 
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Input (JSON)"
-                            multiline
-                            fullWidth
-                            value={newAssignment.input}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setNewAssignment((prev) => ({ ...prev, input: value }));
-                            }}
-                            error={!!newAssignment.input && !isValidJson(newAssignment.input)}
-                            helperText={!isValidJson(newAssignment.input) ? 'Invalid JSON!' : ''}
-                            sx={{ mt: 2 }}
-                        />
-                    </Grid>
+                    {/* View All Assignments */}
+                    <Paper sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ mb: 1 }} gutterBottom>Existing Assignments</Typography>
 
-                    <Grid item xs={12}>
-                        <Typography variant="subtitle1">Input Preview</Typography>
-                        <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
-                            <pre>{isValidJson(newAssignment.input) ? JSON.stringify(JSON.parse(newAssignment.input), null, 2) : 'Invalid JSON'}</pre>
-                        </Paper>
-                    </Grid>
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={6}>
+                                <TextField
+                                    fullWidth
+                                    label="Search by Title"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </Grid>
 
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Expected Output (JSON)"
-                            multiline
-                            fullWidth
-                            value={newAssignment.expectedOutput}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, expectedOutput: e.target.value })}
-                        />
-                    </Grid>
-                    
-                    <Grid item xs={12}>
-                        <Typography variant="subtitle1">Expected Output Preview</Typography>
-                        <Paper sx={{ p: 2, bgcolor: '#f5f5f5', fontFamily: 'monospace', fontSize: 12 }}>
-                            <pre>{isValidJson(newAssignment.expectedOutput) ? JSON.stringify(JSON.parse(newAssignment.expectedOutput), null, 2) : 'Invalid JSON'}</pre>
-                        </Paper>
-                    </Grid>
+                            <Grid item xs={3}>
+                                <Select
+                                    fullWidth
+                                    displayEmpty
+                                    value={difficultyFilter}
+                                    onChange={(e) => setDifficultyFilter(e.target.value)}
+                                >
+                                    <MenuItem value="">Filter by Difficulty</MenuItem>
+                                    {difficultyOptions.map(opt => (
+                                        <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
+                        </Grid>
 
-                    <Grid item xs={12}>
-                        {editMode ? (
-                            <>
-                                <Button variant="contained" color="primary" onClick={handleUpdateAssignment}>Save Changes</Button>
-                                <Button variant="text" color="secondary" sx={{ ml: 2 }} onClick={() => {
-                                    setNewAssignment({ title: '', description: '', input: '{}', expectedOutput: '', type: 'custom', difficulty: 'Medium' });
-                                    setEditMode(false);
-                                }}>Cancel</Button>
-                            </>
-                        ) : (
-                            <Button variant="contained" onClick={handleAddAssignment}>Add Assignment</Button>
-                        )}
-                    </Grid>
-                </Grid>
-            </Paper>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Title</TableCell>
+                                    <TableCell>Type</TableCell>
+                                    <TableCell>Difficulty</TableCell>
+                                    <TableCell>Dependencies</TableCell>
+                                    <TableCell>Actions</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {assignments.map((a) => (
+                                    <TableRow key={a.id}>
+                                        <TableCell>{a.title}</TableCell>
+                                        <TableCell>{a.type}</TableCell>
+                                        <TableCell>{a.difficulty}</TableCell>
+                                        <TableCell>
+                                            {(a.unlocksAfter || []).length > 0
+                                                ? a.unlocksAfter.join(', ')
+                                                : '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="outlined"
+                                                color="info"
+                                                size="small"
+                                                onClick={() => {
+                                                    setEditMode(true);
+                                                    setNewAssignment({
+                                                        ...a,
+                                                        input: JSON.stringify(a.input, null, 2),
+                                                        expectedOutput: JSON.stringify(a.expectedOutput, null, 2)
+                                                    });
+                                                }}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                sx={{ ml: 1 }}
+                                                onClick={() => handleDeleteAssignment(a.id)}
+                                            >
+                                                Delete
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                sx={{ ml: 1 }}
+                                                onClick={() => {
+                                                    setPreviewAssignment(a);
+                                                    setPreviewOpen(true);
+                                                }}
+                                            >
+                                                Preview
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Paper>
 
-            {/* View All Assignments */}
-            <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 1 }} gutterBottom>Existing Assignments</Typography>
-                
-                <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Search by Title"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </Grid>
-
-                    <Grid item xs={3}>
-                        <Select
-                            fullWidth
-                            displayEmpty
-                            value={difficultyFilter}
-                            onChange={(e) => setDifficultyFilter(e.target.value)}
-                        >
-                            <MenuItem value="">Filter by Difficulty</MenuItem>
-                            {difficultyOptions.map(opt => (
-                                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                            ))}
-                        </Select>
-                    </Grid>
-                </Grid>
-
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Title</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Difficulty</TableCell>
-                            <TableCell>Dependencies</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {assignments.map((a) => (
-                            <TableRow key={a.id}>
-                                <TableCell>{a.title}</TableCell>
-                                <TableCell>{a.type}</TableCell>
-                                <TableCell>{a.difficulty}</TableCell>
-                                <TableCell>
-                                    {(a.unlocksAfter || []).length > 0
-                                        ? a.unlocksAfter.join(', ')
-                                        : '—'}
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="outlined"
-                                        color="info"
-                                        size="small"
-                                        onClick={() => {
-                                            setEditMode(true);
-                                            setNewAssignment({
-                                                ...a,
-                                                input: JSON.stringify(a.input, null, 2),
-                                                expectedOutput: JSON.stringify(a.expectedOutput, null, 2)
-                                            });
-                                        }}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        size="small"
-                                        sx={{ ml: 1 }}
-                                        onClick={() => handleDeleteAssignment(a.id)}
-                                    >
-                                        Delete
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ ml: 1 }}
-                                        onClick={() => {
-                                            setPreviewAssignment(a);
-                                            setPreviewOpen(true);
-                                        }}
-                                    >
-                                        Preview
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </Paper>
-
-            {/* Submission Review Table (outside the assignments table) */}
-            {/* <Paper sx={{ p: 3, mt: 4 }}>
+                    {/* Submission Review Table (outside the assignments table) */}
+                    {/* <Paper sx={{ p: 3, mt: 4 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>Submission Reviews</Typography>
 
                 <Button onClick={fetchSubmissions} variant="outlined" size="small" sx={{ mb: 2 }}>Refresh</Button>
@@ -507,92 +522,99 @@ const AdminPanel = () => {
 
             </Paper> */}
 
-            <Paper sx={{ p: 3, mt: 4 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>User List</Typography>
-                
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Role</TableCell>
-                            <TableCell>Registered</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {users.map((u) => (
-                            <TableRow key={u._id}>
-                                <TableCell>{u.name || u.username}</TableCell>
-                                <TableCell>{u.email}</TableCell>
-                                <TableCell>
-                                    <Select
-                                        size="small"
-                                        value={u.role}
-                                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                                    >
-                                        <MenuItem value="student">student</MenuItem>
-                                        <MenuItem value="admin">admin</MenuItem>
-                                    </Select>
-                                </TableCell>
-                                <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        size="small"
-                                        onClick={() => {
-                                            setUserToDelete(u);
-                                            setDeleteUserDialog(true);
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
+                </>
+            )}
 
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ ml: 1 }}
-                                        onClick={() => {
-                                            setSelectedUserForLogs(u);
-                                            setLogViewerOpen(true);
-                                        }}
-                                    >
-                                        View Logs
-                                    </Button>
+            {tabValue === 2 && (
+                <>
+                    <Paper sx={{ p: 3, mt: 4 }}>
+                        <Typography variant="h6" sx={{ mb: 1 }}>User List</Typography>
 
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ ml: 1 }}
-                                        onClick={async () => {
-                                            try {
-                                                const res = await axios.get(`http://localhost:5000/admin/user-submissions/${u._id}`, {
-                                                    headers: {
-                                                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>Email</TableCell>
+                                    <TableCell>Role</TableCell>
+                                    <TableCell>Registered</TableCell>
+                                    <TableCell>Actions</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {users.map((u) => (
+                                    <TableRow key={u._id}>
+                                        <TableCell>{u.name || u.username}</TableCell>
+                                        <TableCell>{u.email}</TableCell>
+                                        <TableCell>
+                                            <Select
+                                                size="small"
+                                                value={u.role}
+                                                onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                            >
+                                                <MenuItem value="student">student</MenuItem>
+                                                <MenuItem value="admin">admin</MenuItem>
+                                            </Select>
+                                        </TableCell>
+                                        <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                onClick={() => {
+                                                    setUserToDelete(u);
+                                                    setDeleteUserDialog(true);
+                                                }}
+                                            >
+                                                Delete
+                                            </Button>
+
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                sx={{ ml: 1 }}
+                                                onClick={() => {
+                                                    setSelectedUserForLogs(u);
+                                                    setLogViewerOpen(true);
+                                                }}
+                                            >
+                                                View Logs
+                                            </Button>
+
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                sx={{ ml: 1 }}
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await axios.get(`http://localhost:5000/admin/user-submissions/${u._id}`, {
+                                                            headers: {
+                                                                Authorization: `Bearer ${localStorage.getItem('token')}`
+                                                            }
+                                                        });
+                                                        setSelectedUserSubmissions(res.data);
+                                                        setSelectedSubmissionUser(u);
+                                                        setSubmissionDialogOpen(true);
+                                                    } catch (err) {
+                                                        console.error('Error fetching submissions:', err);
+                                                        alert('Failed to fetch submissions');
                                                     }
-                                                });
-                                                setSelectedUserSubmissions(res.data);
-                                                setSelectedSubmissionUser(u);
-                                                setSubmissionDialogOpen(true);
-                                            } catch (err) {
-                                                console.error('Error fetching submissions:', err);
-                                                alert('Failed to fetch submissions');
-                                            }
-                                        }}
-                                    >
-                                        View Submissions
-                                    </Button>
+                                                }}
+                                            >
+                                                View Submissions
+                                            </Button>
 
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </Paper>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Paper>
 
-            {/* Uncomment this to show the changelog viewer for admins */}
-            {/* <ChangeLogViewer isAdmin={true} /> */}
+                    {/* Uncomment this to show the changelog viewer for admins */}
+                    {/* <ChangeLogViewer isAdmin={true} /> */}
+                </>
+            )}
 
             <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
                 <DialogTitle>{previewAssignment?.title}</DialogTitle>

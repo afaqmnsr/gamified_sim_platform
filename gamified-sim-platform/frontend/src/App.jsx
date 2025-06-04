@@ -312,9 +312,14 @@ function App() {
         const edges = [];
 
         nodes.forEach(source => {
-          parsedGraph[source].forEach(target => {
-            edges.push({ source, target });
-          });
+          const neighbors = parsedGraph[source];
+          if (Array.isArray(neighbors)) {
+            neighbors.forEach(target => {
+              edges.push({ source, target });
+            });
+          } else {
+            console.warn(`Invalid adjacency list at node "${source}":`, neighbors);
+          }
         });
 
         finalConstraints = { nodes, edges };
@@ -558,11 +563,12 @@ function App() {
                           ? results.sortedArray.steps
                           : results?.customResult?.steps || []
                     }
-                    initialArray={
-                      selectedAlgorithm === 'maxFlow'
-                        ? []
-                        : inputArray
-                    }
+                    // initialArray={
+                    //   selectedAlgorithm === 'maxFlow'
+                    //     ? []
+                    //     : inputArray
+                    // }
+                    initialArray={Array.isArray(inputArray) ? inputArray : []}
                     currentStep={currentStep}
                     setCurrentStep={setCurrentStep}
                     dpMatrix={results.dpMatrix}

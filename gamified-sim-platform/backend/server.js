@@ -18,6 +18,7 @@ app.use(cookieParser());
 
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
+const courseRoutes = require('./routes/courses');
 
 mongoose.connect('mongodb://localhost:27017/algorithmSimulator', {
     useNewUrlParser: true,
@@ -51,6 +52,7 @@ function authenticate(req, res, next) {
 }
 
 app.use('/api/auth', authRoutes);
+app.use('/api/course', authenticate, courseRoutes);
 
 // Run Algorithm
 app.post('/run-user-algorithm', async (req, res) => {
