@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/Execution-Python%203.10-blueviolet)
 ![GitHub repo stars](https://img.shields.io/github/stars/afaqmnsr/gamified_sim_platform?style=social)
 
-# 🎓 Gamified Algorithm Simulator Platform
+# Gamified Algorithm Simulator Platform
 
 A full-stack educational web platform designed to teach algorithms through **interactive simulations**, **symbolic correctness checking**, and **sustainability-aware feedback**. The platform leverages gamification to motivate students, offering a visually rich, hands-on environment where learners can explore, verify, and optimize their solutions in Python and JavaScript.
 
@@ -40,11 +40,11 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 This platform was designed to address enduring challenges in algorithm education:
 
-- ❌ Insufficient interactive visual tools for understanding algorithm behavior  
-- ❌ Lack of emphasis on correctness verification in student submissions  
-- ❌ Growing demand for sustainable computing practices in computer science education  
+- Insufficient interactive visual tools for understanding algorithm behavior  
+- Lack of emphasis on correctness verification in student submissions  
+- Growing demand for sustainable computing practices in computer science education  
 
-By combining 🎮 gamification, 🧠 symbolic execution, and 🌱 sustainability-aware feedback, this platform empowers learners to **explore, experiment, and optimize** algorithmic solutions with **real-time insights** and **unlockable progression**.  
+By combining gamification, symbolic execution, and sustainability-aware feedback, this platform empowers learners to **explore, experiment, and optimize** algorithmic solutions with **real-time insights** and **unlockable progression**.  
 
 The approach draws from constructivist pedagogy and formal methods to support deeper, more engaging computational learning.
 
@@ -52,12 +52,12 @@ The approach draws from constructivist pedagogy and formal methods to support de
 
 ## Key Features
 
-- ✨ **Interactive Algorithm Visualizer** for graph, sorting, Petri net, and dynamic programming simulations.
-- 🎮 **Gamified Assignments** with unlockable tasks and a leaderboard system.
-- 🧠 **Symbolic Execution Engine** for correctness verification using Z3 SMT solver.
-- 🌱 **Sustainability Feedback** through time/memory/energy metrics.
-- 👩‍🏫 **Admin Panel** for course/assignment management and user tracking.
-- 💻 **Multi-language Support**: Python and JavaScript execution environments.
+- **Interactive Algorithm Visualizer** for graph, sorting, Petri net, and dynamic programming simulations.
+- **Gamified Assignments** with unlockable tasks and a leaderboard system.
+- **Symbolic Execution Engine** for correctness verification using Z3 SMT solver.
+- **Sustainability Feedback** through time/memory/energy metrics.
+- **Admin Panel** for course/assignment management and user tracking.
+- **Multi-language Support**: Python and JavaScript execution environments.
 
 ---
 
@@ -277,10 +277,10 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ## Known Limitations
 
-- ⚠️ **Recursive or unbounded loops** may cause symbolic analysis to hang or timeout.
-- 🚫 **JavaScript symbolic execution** is not yet supported—only Python is verified via Z3.
-- 🧪 **No live user deployment** — the system was tested locally with seeded users and manual testing.
-- 🧰 **Scalability constraints** may arise; sandboxing and load-handling are not yet optimized for production.
+- **Recursive or unbounded loops** may cause symbolic analysis to hang or timeout.
+- **JavaScript symbolic execution** is not yet supported—only Python is verified via Z3.
+- **No live user deployment** — the system was tested locally with seeded users and manual testing.
+- **Scalability constraints** may arise; sandboxing and load-handling are not yet optimized for production.
 
 ---
 
@@ -288,9 +288,9 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 While the system was not deployed in a live classroom, extensive evaluation capabilities were built-in:
 
-- 🔍 **Symbolic Logs**: Tracks assignment submissions, retries, and symbolic correctness outcomes.  
-- 📊 **Sustainability Metrics**: Captures execution time, memory, and energy proxies for each run.  
-- 🎓 **Gamified Progression Logs**: Logs task unlocks, completion order, and leaderboard activity.
+- **Symbolic Logs**: Tracks assignment submissions, retries, and symbolic correctness outcomes.  
+- **Sustainability Metrics**: Captures execution time, memory, and energy proxies for each run.  
+- **Gamified Progression Logs**: Logs task unlocks, completion order, and leaderboard activity.
 
 These features support future empirical studies and align with the research questions defined in the thesis (RQ1–RQ3), covering **learning outcomes**, **optimization behavior**, and **sustainability awareness**.
 
