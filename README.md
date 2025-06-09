@@ -14,22 +14,37 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 ## 📌 Table of Contents
 
+- [🎯 Motivation](#-motivation)
 - [🚀 Key Features](#-key-features)
 - [📸 Screenshots](#-screenshots)
 - [📁 Project Structure](#-project-structure)
-- [⚙️ Prerequisites](#️-prerequisites)
+- [⚙️ Prerequisites](#-prerequisites)
 - [🛠️ Setup Instructions](#-setup-instructions)
 - [🌐 Running the Full Stack](#-running-the-full-stack)
+- [🗂️ System Architecture Overview](#️-system-architecture-overview)
 - [🧪 Sample Endpoints](#-sample-endpoints)
 - [🖥️ UI Overview](#-ui-overview)
 - [🧩 Tech Stack](#-tech-stack)
 - [🔐 Environment Variables](#-environment-variables)
 - [🧰 Deployment Notes](#-deployment-notes)
-- [🩹 Troubleshooting](#-troubleshooting)
-- [✅ Testing and Evaluation](#-testing-and-evaluation)
+- [✅ Evaluation Instrumentation](#-evaluation-instrumentation)
 - [🤝 Contributing](#-contributing)
 - [📚 Thesis Reference](#-thesis-reference)
 - [📜 License](#-license)
+
+---
+
+## 🎯 Motivation
+
+This platform was designed to address enduring challenges in algorithm education:
+
+- ❌ Insufficient interactive visual tools for understanding algorithm behavior  
+- ❌ Lack of emphasis on correctness verification in student submissions  
+- ❌ Growing demand for sustainable computing practices in computer science education  
+
+By combining 🎮 gamification, 🧠 symbolic execution, and 🌱 sustainability-aware feedback, this platform empowers learners to **explore, experiment, and optimize** algorithmic solutions with **real-time insights** and **unlockable progression**.  
+
+The approach draws from constructivist pedagogy and formal methods to support deeper, more engaging computational learning.
 
 ---
 
@@ -197,6 +212,16 @@ Ensure the following services are running:
 
 ---
 
+## 🗂️ System Architecture Overview
+
+![System Architecture Diagram](photos/'diagram_system_architecture.png)
+
+*Figure 3.1 – System component interaction overview (see Chapter 3, Thesis).*
+
+This architecture illustrates the interaction between the React-based frontend, Node.js backend, MongoDB storage, and the Python microservices handling code execution and symbolic verification.
+
+---
+
 ## 🧪 Sample Endpoints
 
 **Run User Code:**
@@ -220,7 +245,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 - Code Editor (Ace Editor)
 - Visualization outputs (bar chart, graph, matrix)
 - Leaderboard and unlocked assignment tree
-- Admin panel to manage users, assignments, logs
+- Admin panel to manage users, courses, assignments, logs
 
 ---
 
@@ -265,15 +290,15 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## ✅ Testing and Evaluation
+## ✅ Evaluation Instrumentation
 
-While no formal user study was conducted, the system includes:
+While the system was not deployed in a live classroom, extensive evaluation capabilities were built-in:
 
-- Submission logs and analytics for each assignment.
-- Symbolic correctness evaluation and sustainability scoring.
-- Gamified flow testing with pre-seeded users.
+- 🔍 **Symbolic Logs**: Tracks assignment submissions, retries, and symbolic correctness outcomes.  
+- 📊 **Sustainability Metrics**: Captures execution time, memory, and energy proxies for each run.  
+- 🎓 **Gamified Progression Logs**: Logs task unlocks, completion order, and leaderboard activity.
 
-📈 This instrumentation supports future classroom deployments and evaluation under RQ1–RQ3 from the thesis.
+These features support future empirical studies and align with the research questions defined in the thesis (RQ1–RQ3), covering **learning outcomes**, **optimization behavior**, and **sustainability awareness**.
 
 ---
 
@@ -295,9 +320,11 @@ This platform was developed as part of the master's thesis:
 **Degree Program**: [MSc in Computer Science](https://www.uis.no/en/studies/master-of-science-in-computer-science)  
 **Year**: 2025  
 **Supervisor**: [Prof. Dr. Nejm Saadallah](https://www.uis.no/nb/profile/nejm-saadallah)  
-**Repository**: [Gamified Simulator GitHub](https://github.com/afaqmnsr/gamified_sim_platform)  
+**Repository**: [GitHub](https://github.com/afaqmnsr/gamified_sim_platform)  
 
-📄 For implementation details, motivation, and visual appendices, refer to Chapters 3–5 and Appendix B of the thesis.
+📄 The thesis documents the platform’s **motivation**, **pedagogical design**, **technical architecture**, **symbolic engine**, and **evaluation instrumentation**.  
+Refer to Chapters 3–5 and Appendix B for implementation and UI walkthroughs.  
+📥 Full thesis available upon request or via UiS archive.
 
 ---
 
