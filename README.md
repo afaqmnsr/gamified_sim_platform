@@ -22,7 +22,7 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
 - ✨ **Interactive Algorithm Visualizer** for graph, sorting, Petri net, and dynamic programming simulations.
 - 🎮 **Gamified Assignments** with unlockable tasks and a leaderboard system.
