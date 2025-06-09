@@ -1,3 +1,9 @@
+![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
+![React](https://img.shields.io/badge/Frontend-React%2019-blue)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-yellow)
+![Python](https://img.shields.io/badge/Execution-Python%203.10-blueviolet)
+![GitHub repo stars](https://img.shields.io/github/stars/afaqmnsr/gamified_sim_platform?style=social)
+
 # 🎓 Gamified Algorithm Simulator Platform
 
 A full-stack educational web platform designed to teach algorithms through **interactive simulations**, **symbolic correctness checking**, and **sustainability-aware feedback**. The platform leverages gamification to motivate students, offering a visually rich, hands-on environment where learners can explore, verify, and optimize their solutions in Python and JavaScript.
@@ -52,24 +58,26 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 ## 📁 Project Structure
 
+```text
 gamified-sim-platform/
-├── backend/             # Express API server + Python microservices
-│   ├── controllers/     # Authentication, course, user logic
-│   ├── helpers/         # Execution, scoring, seeding
-│   ├── models/          # MongoDB schemas
-│   ├── routes/          # API endpoints
-│   ├── python-service/  # Flask-based Python code executor
-│   ├── smt-service/     # Flask-based symbolic analysis using Z3
-│   └── server.js
+├── backend/ # Express API server + Python microservices
+│ ├── controllers/ # Authentication, course, user logic
+│ ├── helpers/ # Execution, scoring, seeding
+│ ├── models/ # MongoDB schemas
+│ ├── routes/ # API endpoints
+│ ├── python-service/ # Flask-based Python code executor
+│ ├── smt-service/ # Flask-based symbolic analysis using Z3
+│ └── server.js
 │
-├── frontend/            # React + Vite frontend
-│   ├── public/ace/      # Static files for Ace Editor
-│   └── src/
-│       ├── components/  # Simulators, visual tools, UI elements
-│       ├── constants/   # Algorithm presets
-│       ├── contexts/    # Auth, theme
-│       ├── pages/       # Login, registration, admin
-│       └── utils/       # Axios, Petri Net logic, etc.
+├── frontend/ # React + Vite frontend
+│ ├── public/ace/ # Static files for Ace Editor
+│ └── src/
+│ ├── components/ # Simulators, visual tools, UI elements
+│ ├── constants/ # Algorithm presets
+│ ├── contexts/ # Auth, theme
+│ ├── pages/ # Login, registration, admin
+│ └── utils/ # Axios, Petri Net logic, etc.
+```
 
 ---
 
@@ -248,6 +256,32 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 | Python service fails         | Use Python 3.10+, activate venv, install all Flask packages         |
 | Ace Editor not loading       | Ensure files are under `frontend/public/ace/` and Vite serves them  |
 | CORS/OPTIONS error           | Update backend CORS settings for correct port and credentials       |
+| Ports already in use         | Kill processes or change dev ports in .env and scripts              |
+
+---
+
+## ✅ Testing and Evaluation
+
+While no formal user study was conducted, the system includes:
+
+- Submission logs and analytics for each assignment.
+- Symbolic correctness evaluation and sustainability scoring.
+- Gamified flow testing with pre-seeded users.
+
+📈 This instrumentation supports future classroom deployments and evaluation under RQ1–RQ3 from the thesis.
+
+---
+
+## 🗺️ Feature Roadmap
+
+- ✅ Sorting & Graph Visualizations
+- ✅ Petri Net & Dynamic Programming Simulators
+- ✅ Gamified Assignment Unlock Tree
+- ✅ Z3-based Symbolic Execution Engine
+- ✅ Sustainability Feedback (time/memory/energy)
+- 🟡 Flow Network Visualization (WIP)
+- 🟡 Assignment Difficulty Calibration
+- 🔲 Real User Study (Planned for future deployment)
 
 ---
 
@@ -259,9 +293,19 @@ Want to improve this platform? Submit a pull request or report issues.
 
 ---
 
-## 📸 Screenshots Gallery
+## 📚 Thesis Reference
 
-For a complete UI walkthrough with screenshots, see `Appendix B` or open the [`photos/`](./photos) folder.
+This platform was developed as part of the master's thesis:
+
+**Title**: *Algorithm Evaluation Through Gamified Simulation: A Sustainable Approach to Computational Efficiency*  
+**Author**: Afaq Mansoor Khan  
+**Institution**: University of Stavanger  
+**Degree Program**: MSc in Computer Science  
+**Year**: 2025  
+**Supervisor**: Prof. Dr. Nejm Saadallah  
+**Repository**: [Gamified Simulator GitHub](https://github.com/afaqmnsr/gamified_sim_platform)
+
+📄 For implementation details, motivation, and visual appendices, refer to Chapters 3–5 and Appendix B of the thesis.
 
 ---
 
