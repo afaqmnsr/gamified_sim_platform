@@ -214,7 +214,7 @@ Ensure the following services are running:
 
 ## 🗂️ System Architecture Overview
 
-![System Architecture Diagram](photos/'diagram_system_architecture.png)
+![System Architecture Diagram](photos/diagram_system_architecture.png)
 
 *Figure 3.1 – System component interaction overview (see Chapter 3, Thesis).*
 
