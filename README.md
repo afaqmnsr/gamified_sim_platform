@@ -12,31 +12,31 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 ---
 
-## 📌 Table of Contents
+## Table of Contents
 
-- [🎯 Motivation](#motivation)
-- [🚀 Key Features](#key-features)
-- [📁 Project Structure](#project-structure)
-- [⚙️ Prerequisites](#prerequisites)
-- [🛠️ Setup Instructions](#setup-instructions)
-- [🌐 Running the Full Stack](#running-the-full-stack)
-- [🗂️ System Architecture Overview](#system-architecture-overview)
-- [🧪 Sample Endpoints](#sample-endpoints)
-- [🖥️ UI Overview](#ui-overview)
-- [🧩 Tech Stack](#tech-stack)
-- [🔐 Environment Variables](#environment-variables)
-- [🧰 Deployment Notes](#deployment-notes)
-- [🩹 Troubleshooting](#troubleshooting)
-- [🔍 Known Limitations](#known-limitations)
-- [✅ Evaluation Instrumentation](#evaluation-instrumentation)
-- [📸 Screenshots](#screenshots)
-- [🤝 Contributing](#contributing)
-- [📚 Thesis Reference](#thesis-reference)
-- [📜 License](#license)
+- [Motivation](#motivation)
+- [Key Features](#key-features)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Setup Instructions](#setup-instructions)
+- [Running the Full Stack](#running-the-full-stack)
+- [System Architecture Overview](#system-architecture-overview)
+- [Sample Endpoints](#sample-endpoints)
+- [UI Overview](#ui-overview)
+- [Tech Stack](#tech-stack)
+- [Environment Variables](#environment-variables)
+- [Deployment Notes](#deployment-notes)
+- [Troubleshooting](#troubleshooting)
+- [Known Limitations](#known-limitations)
+- [Evaluation Instrumentation](#evaluation-instrumentation)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [Thesis Reference](#thesis-reference)
+- [License](#license)
 
 ---
 
-## 🎯 Motivation
+## Motivation
 
 This platform was designed to address enduring challenges in algorithm education:
 
@@ -50,7 +50,7 @@ The approach draws from constructivist pedagogy and formal methods to support de
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - ✨ **Interactive Algorithm Visualizer** for graph, sorting, Petri net, and dynamic programming simulations.
 - 🎮 **Gamified Assignments** with unlockable tasks and a leaderboard system.
@@ -61,7 +61,7 @@ The approach draws from constructivist pedagogy and formal methods to support de
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 gamified-sim-platform/
@@ -86,7 +86,7 @@ gamified-sim-platform/
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
 Install the following before proceeding:
 
@@ -107,7 +107,7 @@ pip install flask flask-cors z3-solver
 
 ---
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### 1. Clone Repository
 
@@ -184,7 +184,7 @@ py smt_service.py  # runs on port 6000
 
 ---
 
-## 🌐 Running the Full Stack
+## Running the Full Stack
 
 Ensure the following services are running:
 
@@ -197,7 +197,7 @@ Ensure the following services are running:
 
 ---
 
-## 🗂️ System Architecture Overview
+## System Architecture Overview
 
 ![System Architecture Diagram](photos/diagram_system_architecture.png)
 
@@ -207,7 +207,7 @@ This architecture illustrates the interaction between the React-based frontend, 
 
 ---
 
-## 🧪 Sample Endpoints
+## Sample Endpoints
 
 **Run User Code:**
 
@@ -223,7 +223,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🖥️ UI Overview
+## UI Overview
 
 - Login/Register + Admin Dashboard
 - Algorithm Selector: JavaScript or Python
@@ -234,7 +234,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🧩 Tech Stack
+## Tech Stack
 
 | Layer       | Stack                              |
 |-------------|-------------------------------------|
@@ -246,7 +246,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 - Only `VITE_`-prefixed vars are exposed to React
 - Do **not** commit `.env` files to version control
@@ -254,7 +254,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🧰 Deployment Notes
+## Deployment Notes
 
 - Run `npm run build` in frontend and serve `dist/`
 - Secure backend with HTTPS, CORS, and cookies
@@ -263,7 +263,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🩹 Troubleshooting
+## Troubleshooting
 
 | Issue                        | Fix                                                                 |
 |-----------------------------|----------------------------------------------------------------------|
@@ -275,7 +275,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## 🔍 Known Limitations
+## Known Limitations
 
 - ⚠️ **Recursive or unbounded loops** may cause symbolic analysis to hang or timeout.
 - 🚫 **JavaScript symbolic execution** is not yet supported—only Python is verified via Z3.
@@ -284,7 +284,7 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
-## ✅ Evaluation Instrumentation
+## Evaluation Instrumentation
 
 While the system was not deployed in a live classroom, extensive evaluation capabilities were built-in:
 
@@ -296,7 +296,7 @@ These features support future empirical studies and align with the research ques
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 | Interface | Description |
 |----------|-------------|
@@ -315,7 +315,7 @@ These features support future empirical studies and align with the research ques
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Want to improve this platform? Submit a pull request or report issues.
 
@@ -323,7 +323,7 @@ Want to improve this platform? Submit a pull request or report issues.
 
 ---
 
-## 📚 Thesis Reference
+## Thesis Reference
 
 This platform was developed as part of the master's thesis:
 
@@ -341,6 +341,6 @@ Refer to Chapters 3–5 and Appendix B for implementation and UI walkthroughs.
 
 ---
 
-## 📜 License
+## License
 
 MIT License – feel free to use and adapt with credit.
