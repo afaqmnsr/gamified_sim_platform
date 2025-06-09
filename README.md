@@ -17,13 +17,19 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 - [🚀 Key Features](#-key-features)
 - [📸 Screenshots](#-screenshots)
 - [📁 Project Structure](#-project-structure)
-- [🛠️ Installation & Setup](#️-installation--setup)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🛠️ Setup Instructions](#-setup-instructions)
 - [🌐 Running the Full Stack](#-running-the-full-stack)
 - [🧪 Sample Endpoints](#-sample-endpoints)
+- [🖥️ UI Overview](#-ui-overview)
+- [🧩 Tech Stack](#-tech-stack)
 - [🔐 Environment Variables](#-environment-variables)
 - [🧰 Deployment Notes](#-deployment-notes)
 - [🩹 Troubleshooting](#-troubleshooting)
+- [✅ Testing and Evaluation](#-testing-and-evaluation)
+- [🗺️ Feature Roadmap](#-feature-roadmap)
 - [🤝 Contributing](#-contributing)
+- [📚 Thesis Reference](#-thesis-reference)
 - [📜 License](#-license)
 
 ---
@@ -298,11 +304,11 @@ Want to improve this platform? Submit a pull request or report issues.
 This platform was developed as part of the master's thesis:
 
 **Title**: *Algorithm Evaluation Through Gamified Simulation: A Sustainable Approach to Computational Efficiency*  
-**Author**: Afaq Mansoor Khan  
-**Institution**: University of Stavanger  
-**Degree Program**: MSc in Computer Science  
+**Author**: [Afaq Mansoor Khan](https://linkedin.com/in/afaqmnsr)
+**Institution**: [University of Stavanger, Norway](https://www.uis.no/en)
+**Degree Program**: [MSc in Computer Science](https://www.uis.no/en/studies/master-of-science-in-computer-science)
 **Year**: 2025  
-**Supervisor**: Prof. Dr. Nejm Saadallah  
+**Supervisor**: [Prof. Dr. Nejm Saadallah](https://www.uis.no/nb/profile/nejm-saadallah)
 **Repository**: [Gamified Simulator GitHub](https://github.com/afaqmnsr/gamified_sim_platform)
 
 📄 For implementation details, motivation, and visual appendices, refer to Chapters 3–5 and Appendix B of the thesis.
