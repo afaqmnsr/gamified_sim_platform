@@ -16,7 +16,6 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 
 - [🎯 Motivation](#-motivation)
 - [🚀 Key Features](#-key-features)
-- [📸 Screenshots](#-screenshots)
 - [📁 Project Structure](#-project-structure)
 - [⚙️ Prerequisites](#-prerequisites)
 - [🛠️ Setup Instructions](#-setup-instructions)
@@ -27,7 +26,9 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 - [🧩 Tech Stack](#-tech-stack)
 - [🔐 Environment Variables](#-environment-variables)
 - [🧰 Deployment Notes](#-deployment-notes)
+- [🔍 Known Limitations](#-known-limitations)
 - [✅ Evaluation Instrumentation](#-evaluation-instrumentation)
+- [📸 Screenshots](#-screenshots)
 - [🤝 Contributing](#-contributing)
 - [📚 Thesis Reference](#-thesis-reference)
 - [📜 License](#-license)
@@ -58,23 +59,6 @@ The approach draws from constructivist pedagogy and formal methods to support de
 - 💻 **Multi-language Support**: Python and JavaScript execution environments.
 
 ---
-
-## 📸 Screenshots
-
-| Interface | Description |
-|----------|-------------|
-| ![](photos/05_loginScreen.png) | User Login |
-| ![](photos/12_run_bubbleSort.png) | Bubble Sort Execution |
-| ![](photos/13_bubbleSort_visualization.png) | Bubble Sort Visualization |
-| ![](photos/15_draw_customGraph_BFS.png) | Custom BFS Graph Creation |
-| ![](photos/18_BFS_output_graph_visualization.png) | BFS Traversal Graph |
-| ![](photos/20_PetriNet_fire_output_graph_visualization.png) | Petri Net Simulator |
-| ![](photos/23_DynamicProgramming_output_matrixVisualization.png) | Dynamic Programming Matrix |
-| ![](photos/27_assignment2_unlocked.png) | Gamified Unlocking |
-| ![](photos/31_admin_usersTab.png) | Admin: Users Tab |
-| ![](photos/33_admin_submissionLog_usersTab.png) | Admin: Submission Logs |
-
-> See [`photos/`](./photos) folder or Appendix B of the thesis for full walkthrough.
 
 ## 📁 Project Structure
 
@@ -216,7 +200,7 @@ Ensure the following services are running:
 
 ![System Architecture Diagram](photos/diagram_system_architecture.png)
 
-*Figure 3.1 – System component interaction overview (see Chapter 3, Thesis).*
+*Figure 3.1 – Platform architecture overview, based on Chapter 3 of the thesis.*
 
 This architecture illustrates the interaction between the React-based frontend, Node.js backend, MongoDB storage, and the Python microservices handling code execution and symbolic verification.
 
@@ -290,6 +274,15 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 
 ---
 
+## 🔍 Known Limitations
+
+- ⚠️ **Recursive or unbounded loops** may cause symbolic analysis to hang or timeout.
+- 🚫 **JavaScript symbolic execution** is not yet supported—only Python is verified via Z3.
+- 🧪 **No live user deployment** — the system was tested locally with seeded users and manual testing.
+- 🧰 **Scalability constraints** may arise; sandboxing and load-handling are not yet optimized for production.
+
+---
+
 ## ✅ Evaluation Instrumentation
 
 While the system was not deployed in a live classroom, extensive evaluation capabilities were built-in:
@@ -299,6 +292,25 @@ While the system was not deployed in a live classroom, extensive evaluation capa
 - 🎓 **Gamified Progression Logs**: Logs task unlocks, completion order, and leaderboard activity.
 
 These features support future empirical studies and align with the research questions defined in the thesis (RQ1–RQ3), covering **learning outcomes**, **optimization behavior**, and **sustainability awareness**.
+
+---
+
+## 📸 Screenshots
+
+| Interface | Description |
+|----------|-------------|
+| ![](photos/05_loginScreen.png) | User Login |
+| ![](photos/12_run_bubbleSort.png) | Bubble Sort Execution |
+| ![](photos/13_bubbleSort_visualization.png) | Bubble Sort Visualization |
+| ![](photos/15_draw_customGraph_BFS.png) | Custom BFS Graph Creation |
+| ![](photos/18_BFS_output_graph_visualization.png) | BFS Traversal Graph |
+| ![](photos/20_PetriNet_fire_output_graph_visualization.png) | Petri Net Simulator |
+| ![](photos/23_DynamicProgramming_output_matrixVisualization.png) | Dynamic Programming Matrix |
+| ![](photos/27_assignment2_unlocked.png) | Gamified Unlocking |
+| ![](photos/31_admin_usersTab.png) | Admin: Users Tab |
+| ![](photos/33_admin_submissionLog_usersTab.png) | Admin: Submission Logs |
+
+> See [`photos/`](./photos) folder or Appendix B of the thesis for full walkthrough.
 
 ---
 
