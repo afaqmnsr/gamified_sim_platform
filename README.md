@@ -1,6 +1,24 @@
-# Gamified Algorithm Simulator Platform
+# 🎓 Gamified Algorithm Simulator Platform
 
-A full-stack educational platform that enables students to visualize, test, and optimize algorithms through gamified learning and sustainability-aware feedback. Developed as part of a Master's thesis at the University of Stavanger, the system combines interactive simulations, symbolic execution for correctness verification, and performance metrics like time, memory, and energy—providing a comprehensive and engaging approach to algorithm education.
+A full-stack educational web platform designed to teach algorithms through **interactive simulations**, **symbolic correctness checking**, and **sustainability-aware feedback**. The platform leverages gamification to motivate students, offering a visually rich, hands-on environment where learners can explore, verify, and optimize their solutions in Python and JavaScript.
+
+Developed as part of a master's thesis at the University of Stavanger, this full-stack system aims to address key gaps in algorithm education by integrating constructivist pedagogy, sustainability metrics, and formal verification into one cohesive experience.
+
+---
+
+## 📌 Table of Contents
+
+- [🚀 Key Features](#-key-features)
+- [📸 Screenshots](#-screenshots)
+- [📁 Project Structure](#-project-structure)
+- [🛠️ Installation & Setup](#️-installation--setup)
+- [🌐 Running the Full Stack](#-running-the-full-stack)
+- [🧪 Sample Endpoints](#-sample-endpoints)
+- [🔐 Environment Variables](#-environment-variables)
+- [🧰 Deployment Notes](#-deployment-notes)
+- [🩹 Troubleshooting](#-troubleshooting)
+- [🤝 Contributing](#-contributing)
+- [📜 License](#-license)
 
 ---
 
@@ -14,6 +32,23 @@ A full-stack educational platform that enables students to visualize, test, and 
 - 💻 **Multi-language Support**: Python and JavaScript execution environments.
 
 ---
+
+## 📸 Screenshots
+
+| Interface | Description |
+|----------|-------------|
+| ![](photos/05_loginScreen.png) | User Login |
+| ![](photos/12_run_bubbleSort.png) | Bubble Sort Execution |
+| ![](photos/13_bubbleSort_visualization.png) | Bubble Sort Visualization |
+| ![](photos/15_draw_customGraph_BFS.png) | Custom BFS Graph Creation |
+| ![](photos/18_BFS_output_graph_visualization.png) | BFS Traversal Graph |
+| ![](photos/20_PetriNet_fire_output_graph_visualization.png) | Petri Net Simulator |
+| ![](photos/23_DynamicProgramming_output_matrixVisualization.png) | Dynamic Programming Matrix |
+| ![](photos/27_assignment2_unlocked.png) | Gamified Unlocking |
+| ![](photos/31_admin_usersTab.png) | Admin: Users Tab |
+| ![](photos/33_admin_submissionLog_usersTab.png) | Admin: Submission Logs |
+
+> See Appendix B of the thesis for full walkthrough.
 
 ## 📁 Project Structure
 
@@ -173,10 +208,6 @@ curl -X POST http://localhost:6000/analyze      -H "Content-Type: application/js
 - Visualization outputs (bar chart, graph, matrix)
 - Leaderboard and unlocked assignment tree
 - Admin panel to manage users, assignments, logs
-
-![Simulator View](photos/13_bubbleSort_visualization.png)
-![Assignment Flow](photos/27_assignment2_unlocked.png)
-![Admin Logs](photos/33_admin_submissionLog_usersTab.png)
 
 ---
 
