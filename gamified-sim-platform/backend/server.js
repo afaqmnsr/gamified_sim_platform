@@ -283,20 +283,20 @@ app.post('/run-python-code', async (req, res) => {
             input: inputData
         });
 
-        console.log(response.data)
+        const { result, output, error, executionTime, memoryUsage, energyConsumption, score } = response.data;
 
-        const { result, output, error } = response.data;
         res.json({
-            result,            // universal
-            customResult: result, // backward-compatibility
-            sortedArray: Array.isArray(result) ? result : null, // auto-map for sorting
+            result,
+            customResult: result,
+            sortedArray: Array.isArray(result) ? result : null,
             output,
             error,
-            executionTime: 'N/A',
-            memoryUsage: 'N/A',
-            energyConsumption: 'N/A',
-            score: 'N/A'
+            executionTime: executionTime || 'N/A',
+            memoryUsage: memoryUsage || 'N/A',
+            energyConsumption: energyConsumption || 'N/A',
+            score: score || 'N/A'
         });
+
     } catch (err) {
         console.error('Python execution failed:', err.message);
         res.status(500).json({ error: 'Failed to execute Python code' });
