@@ -27,7 +27,6 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 - [🧰 Deployment Notes](#-deployment-notes)
 - [🩹 Troubleshooting](#-troubleshooting)
 - [✅ Testing and Evaluation](#-testing-and-evaluation)
-- [🗺️ Feature Roadmap](#-feature-roadmap)
 - [🤝 Contributing](#-contributing)
 - [📚 Thesis Reference](#-thesis-reference)
 - [📜 License](#-license)
@@ -278,19 +277,6 @@ While no formal user study was conducted, the system includes:
 
 ---
 
-## 🗺️ Feature Roadmap
-
-- ✅ Sorting & Graph Visualizations
-- ✅ Petri Net & Dynamic Programming Simulators
-- ✅ Gamified Assignment Unlock Tree
-- ✅ Z3-based Symbolic Execution Engine
-- ✅ Sustainability Feedback (time/memory/energy)
-- 🟡 Flow Network Visualization (WIP)
-- 🟡 Assignment Difficulty Calibration
-- 🔲 Real User Study (Planned for future deployment)
-
----
-
 ## 🤝 Contributing
 
 Want to improve this platform? Submit a pull request or report issues.
@@ -304,12 +290,12 @@ Want to improve this platform? Submit a pull request or report issues.
 This platform was developed as part of the master's thesis:
 
 **Title**: *Algorithm Evaluation Through Gamified Simulation: A Sustainable Approach to Computational Efficiency*  
-**Author**: [Afaq Mansoor Khan](https://linkedin.com/in/afaqmnsr)
-**Institution**: [University of Stavanger, Norway](https://www.uis.no/en)
-**Degree Program**: [MSc in Computer Science](https://www.uis.no/en/studies/master-of-science-in-computer-science)
+**Author**: [Afaq Mansoor Khan](https://linkedin.com/in/afaqmnsr)  
+**Institution**: [University of Stavanger, Norway](https://www.uis.no/en)  
+**Degree Program**: [MSc in Computer Science](https://www.uis.no/en/studies/master-of-science-in-computer-science)  
 **Year**: 2025  
-**Supervisor**: [Prof. Dr. Nejm Saadallah](https://www.uis.no/nb/profile/nejm-saadallah)
-**Repository**: [Gamified Simulator GitHub](https://github.com/afaqmnsr/gamified_sim_platform)
+**Supervisor**: [Prof. Dr. Nejm Saadallah](https://www.uis.no/nb/profile/nejm-saadallah)  
+**Repository**: [Gamified Simulator GitHub](https://github.com/afaqmnsr/gamified_sim_platform)  
 
 📄 For implementation details, motivation, and visual appendices, refer to Chapters 3–5 and Appendix B of the thesis.
 
