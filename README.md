@@ -59,7 +59,7 @@ Developed as part of a master's thesis at the University of Stavanger, this full
 | ![](photos/31_admin_usersTab.png) | Admin: Users Tab |
 | ![](photos/33_admin_submissionLog_usersTab.png) | Admin: Submission Logs |
 
-> See Appendix B of the thesis for full walkthrough.
+> See [`photos/`](./photos) folder or Appendix B of the thesis for full walkthrough.
 
 ## 📁 Project Structure
 
