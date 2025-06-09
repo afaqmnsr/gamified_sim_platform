@@ -99,8 +99,8 @@ pip install flask flask-cors z3-solver
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/username/gamified-algo-simulator.git
-cd gamified-algo-simulator
+git clone https://github.com/afaqmnsr/gamified_sim_platform.git
+cd gamified-sim-platform
 ```
 
 ### 2. Backend Setup
